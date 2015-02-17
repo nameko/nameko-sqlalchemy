@@ -1,4 +1,3 @@
-import tempfile
 from weakref import WeakKeyDictionary
 
 from nameko.testing.services import entrypoint_hook, dummy
@@ -79,10 +78,10 @@ def test_dependency_provider(container_factory):
     assert not session.new  # session.close() rolls back new objects
 
 
-def test_end_to_end(container_factory):
+def test_end_to_end(container_factory, tmpdir):
 
     # create a temporary database
-    db_uri = 'sqlite:///{}'.format(tempfile.NamedTemporaryFile().name)
+    db_uri = 'sqlite:///{}'.format(tmpdir.join("db").strpath)
     engine = create_engine(db_uri)
     ExampleModel.metadata.create_all(engine)
 
