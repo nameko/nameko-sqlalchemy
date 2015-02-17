@@ -1,12 +1,14 @@
 import tempfile
+from weakref import WeakKeyDictionary
 
 from nameko.testing.services import entrypoint_hook, dummy
 from nameko.testing.utils import get_extension
+from mock import Mock
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.session import Session as SqlalchemySession
 
-from nameko_sqlalchemy import OrmSession, ORM_DB_URIS_KEY
+from nameko_sqlalchemy import Session, DB_URIS_KEY
 
 
 DeclBase = declarative_base(name='examplebase')
@@ -19,7 +21,7 @@ class ExampleModel(DeclBase):
 
 
 class ExampleService(object):
-    session = OrmSession(DeclBase)
+    session = Session(DeclBase)
 
     @dummy
     def write(self, value):
@@ -36,7 +38,7 @@ class ExampleService(object):
 def test_dependency_provider(container_factory):
 
     config = {
-        ORM_DB_URIS_KEY: {
+        DB_URIS_KEY: {
             'exampleservice:examplebase': 'sqlite:///:memory:'
         }
     }
@@ -44,24 +46,30 @@ def test_dependency_provider(container_factory):
     container = container_factory(ExampleService, config)
     container.start()
 
-    session_provider = get_extension(container, OrmSession)
+    session_provider = get_extension(container, Session)
 
     # verify setup
     assert session_provider.db_uri == 'sqlite:///:memory:'
 
     # verify get_dependency
-    worker_ctx = object()  # don't need a real worker context
+    worker_ctx = Mock()  # don't need a real worker context
     session = session_provider.get_dependency(worker_ctx)
-    assert isinstance(session, Session)
+    assert isinstance(session, SqlalchemySession)
     assert session_provider.sessions[worker_ctx] is session
 
     # verify multiple workers
-    worker_ctx_2 = object()
+    worker_ctx_2 = Mock()
     session_2 = session_provider.get_dependency(worker_ctx_2)
-    assert session_provider.sessions == {
+    assert session_provider.sessions == WeakKeyDictionary({
         worker_ctx: session,
         worker_ctx_2: session_2
-    }
+    })
+
+    # verify weakref
+    del worker_ctx_2
+    assert session_provider.sessions == WeakKeyDictionary({
+        worker_ctx: session
+    })
 
     # verify teardown
     session.add(ExampleModel())
@@ -79,7 +87,7 @@ def test_end_to_end(container_factory):
     ExampleModel.metadata.create_all(engine)
 
     config = {
-        ORM_DB_URIS_KEY: {
+        DB_URIS_KEY: {
             'exampleservice:examplebase': db_uri
         }
     }
