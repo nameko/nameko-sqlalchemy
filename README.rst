@@ -8,7 +8,7 @@ Usage
 
 .. code-block:: python
 
-    from nameko_sqlalchemy import OrmSession
+    from nameko_sqlalchemy import Session
 
     from .models import Model, DeclarativeBase
 
