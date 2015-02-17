@@ -5,16 +5,10 @@ from os.path import abspath, dirname
 
 setup_dir = dirname(abspath(__file__))
 
-with open('README.rst') as fh:
-    readme = fh.read()
-
-import pdb; pdb.set_trace()
-
 setup(
     name='nameko-sqlalchemy',
-    version='1.0.0',
+    version='0.0.1',
     description='SQLAlchemy dependency for nameko services',
-    longdescription=readme,
     author='onefinestay',
     author_email='engineering@onefinestay.com',
     url='http://github.com/onefinestay/nameko-sqlalchemy',
