@@ -17,6 +17,11 @@ setup(
         "nameko>=2.0.0",
         "sqlalchemy"
     ],
+    extras_require={
+        'dev': [
+            "pytest==2.4.2",
+        ]
+    },
     dependency_links=[],
     zip_safe=True,
     license='Apache License, Version 2.0',
