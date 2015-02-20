@@ -14,7 +14,7 @@ Usage
 
     class Service(object):
 
-        session = OrmSession(DeclarativeBase)
+        session = Session(DeclarativeBase)
 
         @entrypoint
         def write_to_db(self):
