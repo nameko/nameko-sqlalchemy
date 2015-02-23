@@ -3,7 +3,7 @@
 # importing anything before the patch is applied.
 # See http://eventlet.net/doc/patching.html#monkeypatching-the-standard-library
 import eventlet
-eventlet.monkey_patch()
+eventlet.monkey_patch()  # noqa (code before rest of imports)
 
 from nameko.containers import ServiceContainer
 import pytest

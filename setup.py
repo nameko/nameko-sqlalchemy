@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-from os.path import abspath, dirname
-
-
-setup_dir = dirname(abspath(__file__))
 
 setup(
     name='nameko-sqlalchemy',
@@ -19,7 +15,14 @@ setup(
     ],
     extras_require={
         'dev': [
+            "coverage==4.0a1",
+            "flake8==2.1.0",
+            "mccabe==0.3",
+            "pep8==1.6.1",
+            "pyflakes==0.8.1",
+            "pylint==1.0.0",
             "pytest==2.4.2",
+            "pytest-timeout==0.4",
         ]
     },
     dependency_links=[],
