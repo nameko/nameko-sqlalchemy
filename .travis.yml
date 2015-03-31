@@ -1,0 +1,33 @@
+sudo: false
+language: python
+python:
+  - "2.7"
+
+install:
+  - pip install tox
+
+env:
+    - TOX_ENV=py27-test
+    - TOX_ENV=py33-test
+    - TOX_ENV=py34-test
+
+script:
+  - tox -e $TOX_ENV
+
+notifications:
+  email: false
+  hipchat:
+    rooms:
+      secure: HdQuYHfBbCnuw0mgj1tJOdlXRhF+b9Ena6JVp1nPdCjP5WX8iCpDAtR4vlTry4X6eNXodb0xsdhWmN9Zq+iDvR0FQvvtRkFUxNpxsqGPLClvUIthTNqjGLgl2lMtbZcHRT1dj/wrKY/yAVdGs/FF/Ghz0MQZgiWtGA5hnb3kZAI=
+    format: html
+    template:
+      - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message} (<a href="%{build_url}">Details</a>/<a href="%{compare_url}">Diff</a>)'
+
+deploy:
+  provider: pypi
+  user: onefinestay
+  password:
+    secure: FI//lZjo1hx/t1treOa85vEWOn7bsaw7bCuKGUsoB8MuC+9QEuabyLDxdHQ6BoPMSIbWh95pVC+6OCXzr+NuWzF2syvarwfBl/Q2DqDx2CV2j+pYh6NKRoH22tZfyLua1POYGVyYrK6hyphlDyZScuKcBfSjQdIFsxU21EJgorw=
+  on:
+    tags: true
+    repo: onefinestay/nameko-sqlalchemy
