@@ -1,3 +1,4 @@
+sudo: false
 language: python
 python:
   - "2.7"
@@ -6,7 +7,9 @@ install:
   - pip install tox
 
 env:
-    - TOX_ENV=test
+    - TOX_ENV=py27-test
+    - TOX_ENV=py33-test
+    - TOX_ENV=py34-test
 
 script:
   - tox -e $TOX_ENV
