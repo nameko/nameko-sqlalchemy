@@ -20,6 +20,8 @@ class ExampleModel(DeclBase):
 
 
 class ExampleService(object):
+    name = "exampleservice"
+
     session = Session(DeclBase)
 
     @dummy
