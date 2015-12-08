@@ -22,11 +22,10 @@ class Session(DependencyProvider):
             'service_name': service_name,
             'declarative_base_name': decl_base_name,
         })
+        self.engine = create_engine(self.db_uri)
 
     def get_dependency(self, worker_ctx):
-
-        engine = create_engine(self.db_uri)
-        session_cls = sessionmaker(bind=engine)
+        session_cls = sessionmaker(bind=self.engine)
         session = session_cls()
 
         self.sessions[worker_ctx] = session
