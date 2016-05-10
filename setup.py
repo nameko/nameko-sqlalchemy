@@ -16,9 +16,9 @@ setup(
     extras_require={
         'dev': [
             "coverage==4.0.3",
-            "flake8==2.5.0",
-            "pylint==1.5.1",
-            "pytest==2.8.3",
+            "flake8==2.5.5",
+            "pylint==1.5.5",
+            "pytest==2.9.1",
         ]
     },
     dependency_links=[],
