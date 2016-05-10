@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 DB_URIS_KEY = 'DB_URIS'
 
 
-class Session(DependencyProvider):
+class DatabaseSession(DependencyProvider):
     def __init__(self, declarative_base):
         self.declarative_base = declarative_base
         self.sessions = WeakKeyDictionary()
@@ -26,6 +26,7 @@ class Session(DependencyProvider):
 
     def stop(self):
         self.engine.dispose()
+        del self.engine
 
     def get_dependency(self, worker_ctx):
 
@@ -38,3 +39,6 @@ class Session(DependencyProvider):
     def worker_teardown(self, worker_ctx):
         session = self.sessions.pop(worker_ctx)
         session.close()
+
+# backwards compat
+Session = DatabaseSession

@@ -1,12 +1,14 @@
 from weakref import WeakKeyDictionary
 
+import pytest
 from mock import Mock
+from nameko.containers import ServiceContainer, WorkerContext
 from nameko.testing.services import dummy, entrypoint_hook
-from nameko.testing.utils import get_extension
-from nameko_sqlalchemy import DB_URIS_KEY, Session
+from nameko_sqlalchemy import DB_URIS_KEY, DatabaseSession
 from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.session import Session as SqlalchemySession
+from sqlalchemy.orm.session import Session
 
 DeclBase = declarative_base(name='examplebase')
 
@@ -20,7 +22,7 @@ class ExampleModel(DeclBase):
 class ExampleService(object):
     name = "exampleservice"
 
-    session = Session(DeclBase)
+    session = DatabaseSession(DeclBase)
 
     @dummy
     def write(self, value):
@@ -34,47 +36,94 @@ class ExampleService(object):
         return self.session.query(ExampleModel).get(id).data
 
 
-def test_dependency_provider(container_factory):
-
-    config = {
+@pytest.fixture
+def config():
+    return {
         DB_URIS_KEY: {
             'exampleservice:examplebase': 'sqlite:///:memory:'
         }
     }
 
-    container = container_factory(ExampleService, config)
-    container.start()
 
-    session_provider = get_extension(container, Session)
+@pytest.fixture
+def container(config):
+    return Mock(
+        spec=ServiceContainer, config=config, service_name="exampleservice"
+    )
 
-    # verify setup
-    assert session_provider.db_uri == 'sqlite:///:memory:'
 
-    # verify get_dependency
-    worker_ctx = Mock()  # don't need a real worker context
-    session = session_provider.get_dependency(worker_ctx)
-    assert isinstance(session, SqlalchemySession)
-    assert session_provider.sessions[worker_ctx] is session
+@pytest.fixture
+def db_session(container):
+    return DatabaseSession(DeclBase).bind(container, "session")
 
-    # verify multiple workers
-    worker_ctx_2 = Mock()
-    session_2 = session_provider.get_dependency(worker_ctx_2)
-    assert session_provider.sessions == WeakKeyDictionary({
-        worker_ctx: session,
+
+def test_setup(db_session):
+    db_session.setup()
+
+    assert db_session.db_uri == "sqlite:///:memory:"
+    assert isinstance(db_session.engine, Engine)
+
+
+def test_stop(db_session):
+    db_session.setup()
+    assert db_session.engine
+
+    db_session.stop()
+    assert not hasattr(db_session, 'engine')
+
+
+def test_get_dependency(db_session):
+    db_session.setup()
+
+    worker_ctx = Mock(spec=WorkerContext)
+    session = db_session.get_dependency(worker_ctx)
+    assert isinstance(session, Session)
+    assert db_session.sessions[worker_ctx] is session
+
+
+def test_multiple_workers(db_session):
+    db_session.setup()
+
+    worker_ctx_1 = Mock(spec=WorkerContext)
+    session_1 = db_session.get_dependency(worker_ctx_1)
+    assert isinstance(session_1, Session)
+    assert db_session.sessions[worker_ctx_1] is session_1
+
+    worker_ctx_2 = Mock(spec=WorkerContext)
+    session_2 = db_session.get_dependency(worker_ctx_2)
+    assert isinstance(session_2, Session)
+    assert db_session.sessions[worker_ctx_2] is session_2
+
+    assert db_session.sessions == WeakKeyDictionary({
+        worker_ctx_1: session_1,
         worker_ctx_2: session_2
     })
 
-    # verify weakref
-    del worker_ctx_2
-    assert session_provider.sessions == WeakKeyDictionary({
-        worker_ctx: session
-    })
 
-    # verify teardown
+def test_weakref(db_session):
+    db_session.setup()
+
+    worker_ctx = Mock(spec=WorkerContext)
+    session = db_session.get_dependency(worker_ctx)
+    assert isinstance(session, Session)
+    assert db_session.sessions[worker_ctx] is session
+
+    del worker_ctx
+    assert db_session.sessions == WeakKeyDictionary({})
+
+
+def test_worker_teardown(db_session):
+    db_session.setup()
+
+    worker_ctx = Mock(spec=WorkerContext)
+    session = db_session.get_dependency(worker_ctx)
+    assert isinstance(session, Session)
+    assert db_session.sessions[worker_ctx] is session
+
     session.add(ExampleModel())
     assert session.new
-    session_provider.worker_teardown(worker_ctx)
-    assert worker_ctx not in session_provider.sessions
+    db_session.worker_teardown(worker_ctx)
+    assert worker_ctx not in db_session.sessions
     assert not session.new  # session.close() rolls back new objects
 
 
