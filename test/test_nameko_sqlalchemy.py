@@ -1,14 +1,12 @@
 from weakref import WeakKeyDictionary
 
-from nameko.testing.services import entrypoint_hook, dummy
-from nameko.testing.utils import get_extension
 from mock import Mock
+from nameko.testing.services import dummy, entrypoint_hook
+from nameko.testing.utils import get_extension
+from nameko_sqlalchemy import DB_URIS_KEY, Session
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import Session as SqlalchemySession
-
-from nameko_sqlalchemy import Session, DB_URIS_KEY
-
 
 DeclBase = declarative_base(name='examplebase')
 
