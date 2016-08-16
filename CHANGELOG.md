@@ -6,7 +6,7 @@ Version 0.0.3
 
 Released PENDING
 
-* Added `py.test` fixtures for managing session in tests.
+* Added `pytest` fixtures for managing session in tests.
  
 Version 0.0.2
 -------------
