@@ -30,4 +30,3 @@ def test_fixtures(db_session):
     saved_user = db_session.query(User).get(user.id)
     assert saved_user.id > 0
     assert saved_user.name == 'Joe'
-
