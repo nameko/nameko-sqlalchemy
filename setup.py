@@ -21,7 +21,11 @@ setup(
             "pytest==2.9.1",
         ]
     },
-    dependency_links=[],
+    entry_points={
+        'pytest11': [
+            'pytest_fixtures=pytest_fixtures'
+        ]
+    },
     zip_safe=True,
     license='Apache License, Version 2.0',
     classifiers=[
