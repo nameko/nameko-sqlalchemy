@@ -43,7 +43,7 @@ def base():
 
         Base = declarative_base(cls=Base)
 
-        @pytest.fixture(scope='module')
+        @pytest.fixture(scope='session')
         def base():
             return Base
     """
