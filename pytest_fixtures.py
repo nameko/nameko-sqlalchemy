@@ -1,42 +1,57 @@
 import pytest
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def db_url():
     """ Database URL used in sqlalchemy.create_engine
 
-    Override this in your test to provide your desired url.
+    Override this in your test to provide your desired test database url.
     For valid urls see: http://docs.sqlalchemy.org/en/latest/core/engines.html
     Defaults to SQLite memory database.
+
+    .. warning::
+
+        Ensure you are providing test database url since
+        data will be deleted for each test function
+        and schema will be recreated on each test run.
     """
     return 'sqlite://'
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def base():
-    error = """
-    Override this fixture in your tests to return
-    `sqlalchemy.ext.declarative.declarative_base` e.g.
+    """ Returns `sqlalchemy.ext.declarative.declarative_base` used
+    for declarative database definitions
 
-    from sqlalchemy.ext.declarative import declarative_base
+    http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/api.html
 
-    class Base:
-        pass
+    You can override this fixture to return base of your model:
 
-    Base = declarative_base(cls=Base)
+    .. code-block:: python
 
-    @pytest.fixture(scope='module')
-    def base():
-        return Base
+        from sqlalchemy.ext.declarative import declarative_base
+
+        class Base:
+            pass
+
+        class User(Base):
+            id = Column(Integer, primary_key=True)
+
+        Base = declarative_base(cls=Base)
+
+        @pytest.fixture(scope='module')
+        def base():
+            return Base
     """
-    raise NotImplementedError(error)
+    return declarative_base()
 
 
-@pytest.yield_fixture(scope="module")
-def connection(db_url, base):
+@pytest.yield_fixture(scope='session')
+def db_connection(db_url, base):
     engine = create_engine(db_url)
     base.metadata.create_all(engine)
     connection = engine.connect()
@@ -47,8 +62,8 @@ def connection(db_url, base):
 
 
 @pytest.yield_fixture
-def session(connection, base):
-    session = sessionmaker(bind=connection)
+def db_session(db_connection, base):
+    session = sessionmaker(bind=db_connection)
     db_session = session()
 
     yield db_session
