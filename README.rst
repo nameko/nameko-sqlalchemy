@@ -54,7 +54,7 @@ Pytest fixtures to allow for easy testing are available.
     from sqlalchemy.ext.declarative import declarative_base
 
 
-    class Base:
+    class Base(object):
         pass
 
 
@@ -73,7 +73,7 @@ Pytest fixtures to allow for easy testing are available.
         return Base
 
 
-    def test_fixtures(db_session):
+    def test_users(db_session):
         user = User(id=1, name='Joe')
         db_session.add(user)
         db_session.commit()
