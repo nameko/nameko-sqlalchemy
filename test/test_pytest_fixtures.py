@@ -23,10 +23,14 @@ def base():
     return Base
 
 
-def test_fixtures(db_session):
+def test_can_save_model(db_session):
     user = User(id=1, name='Joe')
     db_session.add(user)
     db_session.commit()
     saved_user = db_session.query(User).get(user.id)
     assert saved_user.id > 0
     assert saved_user.name == 'Joe'
+
+
+def test_db_is_empty(db_session):
+    assert not db_session.query(User).all()
