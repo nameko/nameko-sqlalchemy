@@ -5,8 +5,21 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        '--test_db_url',
+        action='store',
+        dest='TEST_DB_URL',
+        default='sqlite://',
+        help=(
+            'DB url for testing (e.g. '
+            '"postgresql://username:password@localhost/test")'
+        )
+    )
+
+
 @pytest.fixture(scope='session')
-def db_url():
+def db_url(request):
     """ Database URL used in sqlalchemy.create_engine
 
     Override this in your test to provide your desired test database url.
@@ -19,7 +32,7 @@ def db_url():
         data will be deleted for each test function
         and schema will be recreated on each test run.
     """
-    return 'sqlite://'
+    return request.config.getoption('TEST_DB_URL')
 
 
 @pytest.fixture(scope='session')
