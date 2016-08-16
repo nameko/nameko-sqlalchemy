@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 def pytest_addoption(parser):
     parser.addoption(
-        '--test_db_url',
+        '--test-db-url',
         action='store',
         dest='TEST_DB_URL',
         default='sqlite://',

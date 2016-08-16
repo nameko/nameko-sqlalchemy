@@ -80,9 +80,9 @@ Pytest fixtures to allow for easy testing are available.
         assert saved_user.id > 0
         assert saved_user.name == 'Joe'
 
-When running tests you can pass database test url with ``--test_db_url`` parameter or override ``db_url`` fixture.
+When running tests you can pass database test url with ``--test-db-url`` parameter or override ``db_url`` fixture.
 By default SQLite memory database will be used.
 
 .. code-block:: shell
 
-    py.test test --test_db_url=sqlite:///test_db.sql
+    py.test test --test-db-url=sqlite:///test_db.sql
