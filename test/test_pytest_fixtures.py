@@ -19,7 +19,7 @@ class User(Base):
 
 
 @pytest.fixture(scope='session')
-def base():
+def model_base():
     return Base
 
 

@@ -36,7 +36,7 @@ def db_url(request):
 
 
 @pytest.fixture(scope='session')
-def base():
+def model_base():
     """ Returns `sqlalchemy.ext.declarative.declarative_base` used
     for declarative database definitions
 
@@ -57,25 +57,27 @@ def base():
         Base = declarative_base(cls=Base)
 
         @pytest.fixture(scope='session')
-        def base():
+        def model_base():
             return Base
     """
     return declarative_base()
 
 
 @pytest.yield_fixture(scope='session')
-def db_connection(db_url, base):
+def db_connection(db_url, model_base):
     engine = create_engine(db_url)
-    base.metadata.create_all(engine)
+    model_base.metadata.create_all(engine)
     connection = engine.connect()
-    base.metadata.bind = engine
+    model_base.metadata.bind = engine
+
     yield connection
-    base.metadata.drop_all()
+
+    model_base.metadata.drop_all()
     engine.dispose()
 
 
 @pytest.yield_fixture
-def db_session(db_connection, base):
+def db_session(db_connection, model_base):
     session = sessionmaker(bind=db_connection)
     db_session = session()
 
@@ -83,7 +85,7 @@ def db_session(db_connection, base):
 
     db_session.rollback()
 
-    for table in reversed(base.metadata.sorted_tables):
+    for table in reversed(model_base.metadata.sorted_tables):
         db_session.execute(table.delete())
 
     db_session.commit()

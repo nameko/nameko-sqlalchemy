@@ -43,7 +43,7 @@ Pytest fixtures
 Pytest fixtures to allow for easy testing are available.
 
 * ``db_session`` fixture (which depends on ``db_connection`` fixture) will instantiate test database and tear it down at the end of each test.
-* ``base`` fixture can be overridden to provide custom ``declarative_base``
+* ``model_base`` fixture can be overridden to provide custom ``declarative_base``
 
 .. code-block:: python
 
@@ -68,7 +68,7 @@ Pytest fixtures to allow for easy testing are available.
 
 
     @pytest.fixture(scope='session')
-    def base():
+    def model_base():
         return Base
 
 
