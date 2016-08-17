@@ -22,7 +22,8 @@ def pytest_addoption(parser):
 def db_url(request):
     """ Database URL used in sqlalchemy.create_engine
 
-    Override this in your test to provide your desired test database url.
+    Use ``--test-db-url`` pytest parameter or override this fixture
+    in your test to provide your desired test database url.
     For valid urls see: http://docs.sqlalchemy.org/en/latest/core/engines.html
     Defaults to SQLite memory database.
 
