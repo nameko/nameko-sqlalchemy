@@ -57,10 +57,10 @@ Pytest fixtures to allow for easy testing are available.
         pass
 
 
-    Base = declarative_base(cls=Base)
+    DeclarativeBase = declarative_base(cls=Base)
 
 
-    class User(Base):
+    class User(DeclarativeBase):
         __tablename__ = "users"
 
         id = Column(Integer, primary_key=True)
@@ -69,7 +69,7 @@ Pytest fixtures to allow for easy testing are available.
 
     @pytest.fixture(scope='session')
     def model_base():
-        return Base
+        return DeclarativeBase
 
 
     def test_users(db_session):

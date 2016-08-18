@@ -8,10 +8,10 @@ class Base(object):
     pass
 
 
-Base = declarative_base(cls=Base)
+DeclarativeBase = declarative_base(cls=Base)
 
 
-class User(Base):
+class User(DeclarativeBase):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -20,7 +20,7 @@ class User(Base):
 
 @pytest.fixture(scope='session')
 def model_base():
-    return Base
+    return DeclarativeBase
 
 
 def test_can_save_model(db_session):

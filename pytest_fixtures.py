@@ -49,17 +49,19 @@ def model_base():
 
         from sqlalchemy.ext.declarative import declarative_base
 
-        class Base:
+        class Base(object):
             pass
 
-        class User(Base):
-            id = Column(Integer, primary_key=True)
+        DeclarativeBase = declarative_base(cls=Base)
 
-        Base = declarative_base(cls=Base)
+        class User(DeclarativeBase):
+            __tablename__ = "users"
+
+            id = Column(Integer, primary_key=True)
 
         @pytest.fixture(scope='session')
         def model_base():
-            return Base
+            return DeclarativeBase
     """
     return declarative_base()
 
