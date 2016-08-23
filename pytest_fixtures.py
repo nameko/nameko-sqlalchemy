@@ -43,7 +43,7 @@ def model_base():
 
     http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/api.html
 
-    You can override this fixture to return base of your model:
+    You need to override this fixture to return declarative base of your model:
 
     .. code-block:: python
 
