@@ -1,7 +1,7 @@
 test: flake8 pylint pytest
 
 flake8:
-	flake8 nameko_sqlalchemy.py test
+	flake8 nameko_sqlalchemy test
 
 pylint:
 	pylint nameko_sqlalchemy -E
