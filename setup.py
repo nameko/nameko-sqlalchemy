@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='nameko-sqlalchemy',
-    version='0.0.2',
+    version='0.0.3',
     description='SQLAlchemy dependency for nameko services',
     author='onefinestay',
     author_email='engineering@onefinestay.com',
@@ -21,7 +21,11 @@ setup(
             "pytest==2.9.1",
         ]
     },
-    dependency_links=[],
+    entry_points={
+        'pytest11': [
+            'pytest_fixtures=pytest_fixtures'
+        ]
+    },
     zip_safe=True,
     license='Apache License, Version 2.0',
     classifiers=[
