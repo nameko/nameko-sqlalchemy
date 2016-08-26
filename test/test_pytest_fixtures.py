@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from nameko_sqlalchemy.pytest_fixtures import model_base as default_model_base
+pytest_plugins = "pytester"
 
 
 class Base(object):
@@ -38,6 +38,16 @@ def test_db_is_empty(db_session):
     assert not db_session.query(User).all()
 
 
-def test_needs_to_override_model_base():
-    with pytest.raises(NotImplementedError):
-        default_model_base()
+def test_requires_override_model_base(testdir):
+
+    testdir.makepyfile(
+        """
+        def test_model_base(model_base):
+            pass
+        """
+    )
+    result = testdir.runpytest()
+    assert result.ret == 1
+    result.stdout.fnmatch_lines(
+        ["*NotImplementedError*"]
+    )
