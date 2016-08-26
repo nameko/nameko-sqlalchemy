@@ -8,7 +8,7 @@ setup(
     author='onefinestay',
     author_email='engineering@onefinestay.com',
     url='http://github.com/onefinestay/nameko-sqlalchemy',
-    py_modules=['nameko_sqlalchemy'],
+    packages=['nameko_sqlalchemy'],
     install_requires=[
         "nameko>=2.0.0",
         "sqlalchemy"
@@ -23,7 +23,7 @@ setup(
     },
     entry_points={
         'pytest11': [
-            'pytest_fixtures=pytest_fixtures'
+            'pytest_fixtures=nameko_sqlalchemy.pytest_fixtures'
         ]
     },
     zip_safe=True,
