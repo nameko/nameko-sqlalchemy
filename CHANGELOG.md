@@ -4,7 +4,7 @@ Release Notes
 Version 0.0.3
 -------------
 
-Released PENDING
+Released 2016-08-26
 
 * Added `pytest` fixtures for managing session in tests.
  
