@@ -23,7 +23,7 @@ setup(
     },
     entry_points={
         'pytest11': [
-            'pytest_fixtures=nameko_sqlalchemy.pytest_fixtures'
+            'nameko_sqlalchemy=nameko_sqlalchemy.pytest_fixtures'
         ]
     },
     zip_safe=True,
