@@ -37,27 +37,29 @@ def db_url(request):
 
 @pytest.fixture(scope='session')
 def model_base():
-    error = """Override this fixture to return declarative base of your model
+    """Override this fixture to return declarative base of your model
 
     http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/api.html
 
-    from sqlalchemy.ext.declarative import declarative_base
+    .. code-block:: python
 
-    class Base(object):
-        pass
+        from sqlalchemy.ext.declarative import declarative_base
 
-    DeclarativeBase = declarative_base(cls=Base)
+        class Base(object):
+            pass
 
-    class User(DeclarativeBase):
-        __tablename__ = "users"
+        DeclarativeBase = declarative_base(cls=Base)
 
-        id = Column(Integer, primary_key=True)
+        class User(DeclarativeBase):
+            __tablename__ = "users"
 
-    @pytest.fixture(scope='session')
-    def model_base():
-        return DeclarativeBase
+            id = Column(Integer, primary_key=True)
+
+        @pytest.fixture(scope='session')
+        def model_base():
+            return DeclarativeBase
     """
-    raise NotImplementedError(error)
+    raise NotImplementedError("Fixture `model_base` has to be overwritten")
 
 
 @pytest.yield_fixture(scope='session')
