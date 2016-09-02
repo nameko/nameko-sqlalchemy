@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+Version 0.0.4
+-------------
+
+Released 2016-09-02
+
+* Fix packaging so pytest fixtures added in 0.0.3 are included.
+
 Version 0.0.3
 -------------
 
