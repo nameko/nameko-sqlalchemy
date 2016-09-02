@@ -1,7 +1,6 @@
 import pytest
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
@@ -38,12 +37,9 @@ def db_url(request):
 
 @pytest.fixture(scope='session')
 def model_base():
-    """ Returns `sqlalchemy.ext.declarative.declarative_base` used
-    for declarative database definitions
+    """Override this fixture to return declarative base of your model
 
     http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/api.html
-
-    You need to override this fixture to return declarative base of your model:
 
     .. code-block:: python
 
@@ -63,7 +59,7 @@ def model_base():
         def model_base():
             return DeclarativeBase
     """
-    return declarative_base()
+    raise NotImplementedError("Fixture `model_base` has to be overwritten")
 
 
 @pytest.yield_fixture(scope='session')

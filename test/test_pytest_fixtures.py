@@ -3,6 +3,8 @@ import pytest
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
+pytest_plugins = "pytester"
+
 
 class Base(object):
     pass
@@ -34,3 +36,18 @@ def test_can_save_model(db_session):
 
 def test_db_is_empty(db_session):
     assert not db_session.query(User).all()
+
+
+def test_requires_override_model_base(testdir):
+
+    testdir.makepyfile(
+        """
+        def test_model_base(model_base):
+            pass
+        """
+    )
+    result = testdir.runpytest()
+    assert result.ret == 1
+    result.stdout.fnmatch_lines(
+        ["*NotImplementedError*"]
+    )
