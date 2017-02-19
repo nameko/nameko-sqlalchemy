@@ -43,7 +43,8 @@ Pytest fixtures
 Pytest fixtures to allow for easy testing are available.
 
 * ``db_session`` fixture (which depends on ``db_connection`` fixture) will instantiate test database and tear it down at the end of each test.
-* ``model_base`` fixture can be overridden to provide custom ``declarative_base``
+* ``model_base`` fixture can be overridden to provide custom ``declarative_base``.
+* ``create_engine_kwargs`` fixture can be overriden to provide additional keyword arguments to ``sqlalchemy.create_engine``.
 
 .. code-block:: python
 
@@ -70,6 +71,11 @@ Pytest fixtures to allow for easy testing are available.
     @pytest.fixture(scope='session')
     def model_base():
         return DeclarativeBase
+
+
+    @pytest.fixture(scope='session')
+    def create_engine_kwargs():
+        return dict(client_encoding='utf8')
 
 
     def test_users(db_session):
