@@ -39,7 +39,6 @@ def test_db_is_empty(db_session):
 
 
 def test_requires_override_model_base(testdir):
-
     testdir.makepyfile(
         """
         def test_model_base(model_base):
@@ -51,3 +50,67 @@ def test_requires_override_model_base(testdir):
     result.stdout.fnmatch_lines(
         ["*NotImplementedError*"]
     )
+
+
+class TestCreateEngineKwargs(object):
+
+    def test_default_create_engine_kwargs(self, create_engine_kwargs):
+        assert create_engine_kwargs == {}
+
+    def test_create_engine_with_default_kwargs(self, testdir, db_session):
+        testdir.makepyfile(
+            """
+            import pytest
+            from mock import Mock, patch
+
+            @pytest.yield_fixture
+            def create_engine_mock():
+                with patch(
+                    'nameko_sqlalchemy.pytest_fixtures.create_engine'
+                ) as m:
+                    yield m
+
+            @pytest.fixture(scope='session')
+            def model_base():
+                return Mock()
+
+            def test_create_engine_with_default_kwargs(
+                create_engine_mock, db_connection
+            ):
+                kwargs = create_engine_mock.call_args_list[0][1]
+                assert kwargs == {}
+            """
+        )
+        result = testdir.runpytest()
+        assert result.ret == 0
+
+    def test_create_engine_with_provided_kwargs(self, testdir, db_session):
+        testdir.makepyfile(
+            """
+            import pytest
+            from mock import Mock, patch
+
+            @pytest.yield_fixture
+            def create_engine_mock():
+                with patch(
+                    'nameko_sqlalchemy.pytest_fixtures.create_engine'
+                ) as m:
+                    yield m
+
+            @pytest.fixture(scope='session')
+            def model_base():
+                return Mock()
+
+            @pytest.fixture(scope='session')
+            def create_engine_kwargs():
+                return dict(client_encoding='utf8')
+
+            def test_create_engine_with_provided_kwargs(
+                create_engine_mock, db_connection
+            ):
+                kwargs = create_engine_mock.call_args_list[0][1]
+                assert kwargs == dict(client_encoding='utf8')
+            """
+        )
+        result = testdir.runpytest()
+        assert result.ret == 0
