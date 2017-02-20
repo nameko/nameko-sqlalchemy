@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+Version 0.1.0
+-------------
+
+Released 2017-02-20
+
+* Added `db_engine_options` fixture.
+* Switched to semantic versioning.
+
 Version 0.0.4
 -------------
 
