@@ -36,7 +36,7 @@ def db_url(request):
 
 
 @pytest.fixture(scope='session')
-def create_engine_kwargs():
+def db_engine_options():
     """Additional keyword arguments used in sqlalchemy.create_engine.
 
     http://docs.sqlalchemy.org/en/latest/core/engines.html
@@ -47,7 +47,7 @@ def create_engine_kwargs():
     .. code-block:: python
 
         @pytest.fixture(scope='session')
-        def create_engine_kwargs():
+        def db_engine_options():
             return dict(client_encoding='utf8')
     """
     return {}
@@ -81,8 +81,8 @@ def model_base():
 
 
 @pytest.yield_fixture(scope='session')
-def db_connection(db_url, model_base, create_engine_kwargs):
-    engine = create_engine(db_url, **create_engine_kwargs)
+def db_connection(db_url, model_base, db_engine_options):
+    engine = create_engine(db_url, **db_engine_options)
     model_base.metadata.create_all(engine)
     connection = engine.connect()
     model_base.metadata.bind = engine

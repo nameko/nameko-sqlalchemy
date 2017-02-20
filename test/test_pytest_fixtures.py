@@ -52,12 +52,12 @@ def test_requires_override_model_base(testdir):
     )
 
 
-class TestCreateEngineKwargs(object):
+class TestDbEngineOptions(object):
 
-    def test_default_create_engine_kwargs(self, create_engine_kwargs):
-        assert create_engine_kwargs == {}
+    def test_default_db_engine_options(self, db_engine_options):
+        assert db_engine_options == {}
 
-    def test_create_engine_with_default_kwargs(self, testdir, db_session):
+    def test_create_engine_with_default_options(self, testdir, db_session):
         testdir.makepyfile(
             """
             import pytest
@@ -74,7 +74,7 @@ class TestCreateEngineKwargs(object):
             def model_base():
                 return Mock()
 
-            def test_create_engine_with_default_kwargs(
+            def test_create_engine_with_default_options(
                 create_engine_mock, db_connection
             ):
                 kwargs = create_engine_mock.call_args_list[0][1]
@@ -84,7 +84,7 @@ class TestCreateEngineKwargs(object):
         result = testdir.runpytest()
         assert result.ret == 0
 
-    def test_create_engine_with_provided_kwargs(self, testdir, db_session):
+    def test_create_engine_with_provided_options(self, testdir, db_session):
         testdir.makepyfile(
             """
             import pytest
@@ -102,10 +102,10 @@ class TestCreateEngineKwargs(object):
                 return Mock()
 
             @pytest.fixture(scope='session')
-            def create_engine_kwargs():
+            def db_engine_options():
                 return dict(client_encoding='utf8')
 
-            def test_create_engine_with_provided_kwargs(
+            def test_create_engine_with_provided_options(
                 create_engine_mock, db_connection
             ):
                 kwargs = create_engine_mock.call_args_list[0][1]
