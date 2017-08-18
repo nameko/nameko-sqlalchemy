@@ -33,7 +33,7 @@ Database drivers
 
 You may use any database `driver compatible with SQLAlchemy <http://docs.sqlalchemy.org/en/rel_0_9/dialects/index.html>`_ provided it is safe to use with `eventlet <http://eventlet.net>`_. This will include all pure-python drivers. Known safe drivers are:
 
-* `pysqlite <http://docs.sqlalchemy.org/en/rel_0_9/dialects/sqlite.html#module-sqlalchemy.dialects.sqlite.pysqlite>`_ (tested in this repo)
+* `pysqlite <http://docs.sqlalchemy.org/en/rel_0_9/dialects/sqlite.html#module-sqlalchemy.dialects.sqlite.pysqlite>`_
 * `pymysql <http://docs.sqlalchemy.org/en/rel_0_9/dialects/mysql.html#module-sqlalchemy.dialects.mysql.pymysql>`_
 
 
@@ -92,3 +92,76 @@ By default SQLite memory database will be used.
 .. code-block:: shell
 
     py.test test --test-db-url=sqlite:///test_db.sql
+    py.test test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
+
+Helper functions
+----------------
+
+run_query
+^^^^^^^^^
+This function provides a way to protect against losing uncommitted changes when a database connection error occur.
+
+Usage
+"""""
+
+.. code-block:: python
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from nameko_sqlalchemy import run_query
+
+
+    engine = create_engine('postgresql://username:password@localhost/test')
+    Session = sessionmaker(bind=engine)
+    db_session = Session()
+
+
+    def get_example_data():
+        return db_session.query(ExampleModel).all()
+
+    example_data = run_query(db_session, query)
+
+This function handles sqlalchemy database connection errors that are raised during the execution of the passed query and makes sure that the current transaction is rolled back so that sqlalchemy will replay them when it manages to connect to the database again.
+
+Running the tests
+-----------------
+
+Prerequisites
+^^^^^^^^^^^^^
+
+Some of the tests use `toxiproxy <https://github.com/Shopify/toxiproxy>`_ to simulate network errors. In order to be able to run those tests you need a toxiproxy server to be in place. You may install it manually or by running the following command (docker is required):
+
+.. code-block:: shell
+
+    make setup-containers
+
+This will setup a mysql and a toxiproxy server with a proxy set up to the database.
+
+
+Running tests by using docker
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once the containers have been set up the tests can be run by running the following command:
+
+.. code-block:: shell
+
+    make test
+
+
+Running tests by using py.test command
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two extra parameters may be passed to `py.test`:
+
+* ``test-db-url``: The database URL
+* ``toxiproxy-api-url``: The url of the Toxiproxy HTTP API
+
+If ``toxiproxy-api-url`` parameter is provided the tests assume that the connection to the provided ``test-db-url`` points to a toxiproxy endpoint that is already set up to a database upstream and this proxy can be disabled and enabled via the HTTP API of toxiproxy.
+
+.. code-block:: shell
+
+    py.test test \
+        --test-db-url="mysql+pymysql://test_user:password@database_host:3306/nameko_sqlalchemy_test" \
+        --toxiproxy-api-url="http://toxiproxy_server:8474"
+
+if no ``toxiproxy-api-url`` parameter was provided the tests that require toxiproxy will be skipped.

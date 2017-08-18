@@ -17,7 +17,7 @@ class User(DeclarativeBase):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String(100))
 
 
 @pytest.fixture(scope='session')

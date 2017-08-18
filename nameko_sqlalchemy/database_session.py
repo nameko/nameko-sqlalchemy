@@ -1,7 +1,7 @@
 from weakref import WeakKeyDictionary
 
 from nameko.extensions import DependencyProvider
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import sessionmaker
 
 DB_URIS_KEY = 'DB_URIS'
@@ -42,3 +42,17 @@ class DatabaseSession(DependencyProvider):
 
 # backwards compat
 Session = DatabaseSession
+
+
+def run_query(session, query, attempts=2):
+    while attempts > 0:
+        attempts -= 1
+        try:
+            return query()
+        except exc.DBAPIError as exception:
+            if attempts > 0 and exception.connection_invalidated:
+                session.rollback()
+            else:
+                raise
+    else:  # pragma: no cover
+        pass

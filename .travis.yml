@@ -1,19 +1,24 @@
 sudo: false
 language: python
 
+services:
+  - docker
+
+before_install:
+  - make setup-containers
+
 python:
   - '2.7'
+  - '3.3'
+  - '3.4'
+  - '3.5'
+  - '3.6'
 
 install:
-  - pip install tox
-
-env:
-  - TOX_ENV=py27-test
-  - TOX_ENV=py33-test
-  - TOX_ENV=py34-test
+  - pip install tox-travis
 
 script:
-  - tox -e $TOX_ENV
+  - tox
 
 deploy:
   provider: pypi
