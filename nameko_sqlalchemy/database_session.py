@@ -29,7 +29,7 @@ class DatabaseSession(DependencyProvider):
             'service_name': service_name,
             'declarative_base_name': declarative_base_name,
         })
-        self.engine = create_engine(self.db_uri, config.get(SQL_ALCHEMY_KEY, {}).get(ENGINE_OPTIONS_KEY, {}))
+        self.engine = create_engine(self.db_uri, **config.get(SQL_ALCHEMY_KEY, {}).get(ENGINE_OPTIONS_KEY, {}))
 
     def stop(self):
         self.engine.dispose()
