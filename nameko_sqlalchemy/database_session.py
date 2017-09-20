@@ -24,12 +24,15 @@ class DatabaseSession(DependencyProvider):
         uri_key = '{}:{}'.format(service_name, declarative_base_name)
         config = self.container.config
 
-        db_uris = config[SQL_ALCHEMY_KEY][DB_URIS_KEY] if SQL_ALCHEMY_KEY in config else config[DB_URIS_KEY]
+        db_uris = config[SQL_ALCHEMY_KEY][DB_URIS_KEY] \
+            if SQL_ALCHEMY_KEY in config else config[DB_URIS_KEY]
         self.db_uri = db_uris[uri_key].format({
             'service_name': service_name,
             'declarative_base_name': declarative_base_name,
         })
-        self.engine = create_engine(self.db_uri, **config.get(SQL_ALCHEMY_KEY, {}).get(ENGINE_OPTIONS_KEY, {}))
+        self.engine = create_engine(
+            self.db_uri,
+            **config.get(SQL_ALCHEMY_KEY, {}).get(ENGINE_OPTIONS_KEY, {}))
 
     def stop(self):
         self.engine.dispose()
