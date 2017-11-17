@@ -92,3 +92,4 @@ By default SQLite memory database will be used.
 .. code-block:: shell
 
     py.test test --test-db-url=sqlite:///test_db.sql
+
