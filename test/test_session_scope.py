@@ -75,7 +75,7 @@ class TestUnit:
     @pytest.yield_fixture
     def session(self):
         with patch(
-            'nameko_sqlalchemy.session_scope.sessionmaker'
+            'nameko_sqlalchemy.database_session.sessionmaker'
         ) as sessionmaker:
             Session = sessionmaker.return_value
             yield Session.return_value
