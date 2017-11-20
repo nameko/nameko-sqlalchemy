@@ -69,10 +69,10 @@ class TestWorkerScopeSessionUnit:
 
         db = dependency_provider.get_dependency(worker_ctx)
         assert dependency_provider.dbs[worker_ctx] is db
-        assert db._session is None
+        assert db._worker_session is None
         session = db.session
         assert isinstance(session, Session)
-        assert db._session is session
+        assert db._worker_session is session
 
     def test_multiple_workers(self, dependency_provider):
 

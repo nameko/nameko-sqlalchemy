@@ -27,20 +27,20 @@ class DatabaseWrapper(object):
 
     def __init__(self, Session):
         self.Session = Session
-        self._session = None
+        self._worker_session = None
 
     def get_session(self):
         return self.Session()
 
     @property
     def session(self):
-        if self._session is None:
-            self._session = self.Session()
-        return self._session
+        if self._worker_session is None:
+            self._worker_session = self.Session()
+        return self._worker_session
 
     def close(self):
-        if self._session:
-            self._session.close()
+        if self._worker_session:
+            self._worker_session.close()
 
 
 class Database(DependencyProvider):
