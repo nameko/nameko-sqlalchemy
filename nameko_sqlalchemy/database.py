@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 
 from nameko.extensions import DependencyProvider

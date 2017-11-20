@@ -1,13 +1,12 @@
 from weakref import WeakKeyDictionary
 
 import pytest
-from mock import call, Mock, patch
+from mock import Mock, patch
 from nameko.containers import ServiceContainer, WorkerContext
 from nameko.testing.services import dummy, entrypoint_hook
 from nameko_sqlalchemy.database import (
     DB_URIS_KEY,
     Database,
-    DatabaseWrapper,
     Session,
 )
 from sqlalchemy import Column, String, create_engine
@@ -88,7 +87,7 @@ class TestWorkerScopeSessionUnit:
         assert isinstance(db_2.session, Session)
         assert dependency_provider.dbs[worker_ctx_2].session is db_2.session
 
-        assert dependency_provider.dbs== WeakKeyDictionary({
+        assert dependency_provider.dbs == WeakKeyDictionary({
             worker_ctx_1: db_1,
             worker_ctx_2: db_2
         })
@@ -134,7 +133,7 @@ class TestGetSessionContextManagerUnit:
     def test_comits_and_closes(self, close, commit, rollback, db):
 
         with db.get_session() as session:
-            pass
+            assert isinstance(session, Session)
 
         commit.assert_called()
         rollback.assert_not_called()
@@ -147,6 +146,7 @@ class TestGetSessionContextManagerUnit:
 
         with pytest.raises(Exception):
             with db.get_session() as session:
+                assert isinstance(session, Session)
                 raise Exception('Yo!')
 
         commit.assert_not_called()
