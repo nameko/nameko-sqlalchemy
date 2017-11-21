@@ -41,7 +41,7 @@ def container(config):
 
 @pytest.fixture
 def dependency_provider(container):
-    return Database(DeclBase).bind(container, 'db_session_scope')
+    return Database(DeclBase).bind(container, 'database')
 
 
 def test_setup(dependency_provider):
