@@ -134,7 +134,7 @@ Some of the tests use `toxiproxy <https://github.com/Shopify/toxiproxy>`_ to sim
 
 .. code-block:: shell
 
-    make setup-containers
+    make test-deps
 
 This will setup a mysql and a toxiproxy server with a proxy set up to the database.
 

@@ -4,9 +4,6 @@ language: python
 services:
   - docker
 
-before_install:
-  - make setup-containers
-
 python:
   - '2.7'
   - '3.3'
