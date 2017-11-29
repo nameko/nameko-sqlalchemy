@@ -120,7 +120,7 @@ Usage
     def get_example_data():
         return db_session.query(ExampleModel).all()
 
-    example_data = run_query(db_session, query)
+    example_data = run_query(db_session, get_example_data)
 
 This function handles sqlalchemy database connection errors that are raised during the execution of the passed query and makes sure that the current transaction is rolled back so that sqlalchemy will replay them when it manages to connect to the database again.
 
