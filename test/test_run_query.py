@@ -28,18 +28,36 @@ def test_reconnects_during_transaction(db_session, toxiproxy):
     db_session.add(ExampleModel(data='hello2'))
     db_session.commit()
 
+    # simulating temporary network issue
     toxiproxy.disable()
     toxiproxy.enable()
 
     model_count = run_query(db_session, get_model_count)
 
-    # The following would raise "MySQL Connection not available." exception
-    # model_count = db_session.query(ExampleModel).count()
-
     assert model_count == 2
 
     db_session.close()
     assert db_session.query(ExampleModel).count() == 2
+
+
+@pytest.mark.usefixtures('example_table')
+def test_raises_without_using_run_query(db_session, toxiproxy):
+    if not toxiproxy:
+        pytest.skip('Toxiproxy not installed')
+
+    def get_model_count():
+        return db_session.query(ExampleModel).count()
+
+    db_session.add(ExampleModel(data='hello1'))
+    db_session.add(ExampleModel(data='hello2'))
+    db_session.commit()
+
+    # simulating temporary network issue
+    toxiproxy.disable()
+    toxiproxy.enable()
+
+    with pytest.raises(OperationalError):
+        db_session.query(ExampleModel).count()
 
 
 @pytest.mark.usefixtures('example_table')
