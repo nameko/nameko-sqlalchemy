@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='nameko-sqlalchemy',
-    version='0.1.0',
+    version='1.0.0',
     description='SQLAlchemy dependency for nameko services',
     author='onefinestay',
     author_email='engineering@onefinestay.com',
