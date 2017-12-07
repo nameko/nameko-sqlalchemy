@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+Version 1.0.0
+-------------
+
+Released 2017-12-07
+
+* Added a new dependency with on demand worker scoped session
+  and with a session context manager
+
 Version 0.1.0
 -------------
 
