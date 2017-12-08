@@ -3,25 +3,38 @@ language: python
 
 services:
   - docker
-
-python:
-  - '2.7'
-  - '3.3'
-  - '3.4'
-  - '3.5'
-  - '3.6'
+  - mysql
 
 install:
-  - pip install tox-travis
+  - pip install tox
+
+matrix:
+  include:
+    - stage: test
+      python: 2.7
+      env: TOX_ENV=py27
+    - stage: test
+      python: 3.3
+      env: TOX_ENV=py33
+    - stage: test
+      python: 3.4
+      env: TOX_ENV=py34
+    - stage: test
+      python: 3.5
+      env: TOX_ENV=py35
+    - stage: test
+      python: 3.6
+      env: TOX_ENV=py36
+    - stage: deploy
+      script: skip
+      deploy:
+        provider: pypi
+        user: onefinestay
+        password:
+          secure: L838z+MtH79Px67frLMPo1LP/FULLDDlx6SOgZ/Npg+NBAs8D+Yu2OGCSLxgaHUU7FqK0Gqp4NNQxM8yLD1mGPbtgyd/DYlL8ugDHu45QEx+7YI2tAwc6XOKba1PXqYZi33/aCDUe5LYcVKfoNqXaXZxt25eWwI1VjnH5KJdEpI=
+        on:
+          tags: true
+          repo: onefinestay/nameko-sqlalchemy
 
 script:
-  - tox
-
-deploy:
-  provider: pypi
-  user: onefinestay
-  password:
-    secure: L838z+MtH79Px67frLMPo1LP/FULLDDlx6SOgZ/Npg+NBAs8D+Yu2OGCSLxgaHUU7FqK0Gqp4NNQxM8yLD1mGPbtgyd/DYlL8ugDHu45QEx+7YI2tAwc6XOKba1PXqYZi33/aCDUe5LYcVKfoNqXaXZxt25eWwI1VjnH5KJdEpI=
-  on:
-    tags: true
-    repo: onefinestay/nameko-sqlalchemy
+  - tox -e $TOX_ENV
