@@ -42,7 +42,7 @@ def test_reconnects_during_transaction(db_session, toxiproxy):
     assert db_session.query(ExampleModel).count() == 2
 
 
-def test_works_in_an_object(db_session, toxiproxy):
+def test_session_can_be_passed_with_attrgetter(db_session, toxiproxy):
     if not toxiproxy:
         pytest.skip('Toxiproxy not installed')
 
