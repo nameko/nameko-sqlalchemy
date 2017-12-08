@@ -94,12 +94,12 @@ By default SQLite memory database will be used.
     py.test test --test-db-url=sqlite:///test_db.sql
     py.test test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
 
-Helper functions
-----------------
+Decorators
+----------
 
-run_query
-^^^^^^^^^
-This function provides a way to protect against losing uncommitted changes when a database connection error occur.
+transaction_retry
+^^^^^^^^^^^^^^^^^
+This decorator provides a way to protect against losing uncommitted changes when a database connection error occur.
 
 Usage
 """""
@@ -109,20 +109,20 @@ Usage
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
 
-    from nameko_sqlalchemy import run_query
+    from nameko_sqlalchemy import transaction_retry
 
 
     engine = create_engine('postgresql://username:password@localhost/test')
     Session = sessionmaker(bind=engine)
     db_session = Session()
 
-
+    @transaction_retry(db_session)
     def get_example_data():
-        return db_session.query(ExampleModel).all()
+        return ExampleModel.all()
 
-    example_data = run_query(db_session, get_example_data)
+    example_data = get_example_data()
 
-This function handles sqlalchemy database connection errors that are raised during the execution of the passed query and makes sure that the current transaction is rolled back so that sqlalchemy will replay them when it manages to connect to the database again.
+This decorator handles sqlalchemy database connection errors that are raised during the execution of the passed query and makes sure that the current transaction is rolled back so that sqlalchemy will replay them when it manages to connect to the database again.
 
 Running the tests
 -----------------
