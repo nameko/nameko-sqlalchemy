@@ -5,6 +5,8 @@ from mock import Mock, patch
 from nameko.containers import ServiceContainer, WorkerContext
 from nameko.testing.services import dummy, entrypoint_hook
 from nameko_sqlalchemy.database import (
+    DB_ENGINE_OPTIONS_KEY,
+    DB_SESSION_OPTIONS_KEY,
     DB_URIS_KEY,
     Database,
     Session,
@@ -49,6 +51,20 @@ def test_setup(dependency_provider):
 
     assert dependency_provider.db_uri == 'sqlite:///:memory:'
     assert isinstance(dependency_provider.engine, Engine)
+
+
+def test_engine_options_config(config, dependency_provider):
+    config[DB_ENGINE_OPTIONS_KEY] = {'pool_size': 11}
+    dependency_provider.setup()
+
+    assert dependency_provider.engine.pool.size == 11
+
+
+def test_session_options_config(config, dependency_provider):
+    config[DB_SESSION_OPTIONS_KEY] = {'autoflush': False}
+    dependency_provider.setup()
+
+    assert dependency_provider.Session.kw['autoflush'] is False
 
 
 def test_stop(dependency_provider):

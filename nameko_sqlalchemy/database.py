@@ -7,6 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 
 DB_URIS_KEY = 'DB_URIS'
+DB_ENGINE_OPTIONS_KEY = 'DB_ENGINE_OPTIONS'
+DB_SESSION_OPTIONS_KEY = 'DB_SESSION_OPTIONS'
 
 
 class Session(BaseSession):
@@ -47,6 +49,8 @@ class Database(DependencyProvider):
     def __init__(self, declarative_base):
         self.declarative_base = declarative_base
         self.dbs = WeakKeyDictionary()
+        self.session_options = {}
+        self.engine_options = {}
 
     def setup(self):
         service_name = self.container.service_name
@@ -59,8 +63,14 @@ class Database(DependencyProvider):
             'declarative_base_name': declarative_base_name,
         })
 
-        self.engine = create_engine(self.db_uri)
-        self.Session = sessionmaker(bind=self.engine, class_=Session)
+        self.session_options.update(
+            self.container.config.get(DB_SESSION_OPTIONS_KEY, {}))
+        self.engine_options.update(
+            self.container.config.get(DB_ENGINE_OPTIONS_KEY, {}))
+
+        self.engine = create_engine(self.db_uri, **self.engine_options)
+        self.Session = sessionmaker(
+            bind=self.engine, class_=Session, **self.session_options)
 
     def stop(self):
         self.engine.dispose()
