@@ -171,9 +171,9 @@ or using with the ``Database`` dependency provider
             self.db.session.commit()
 
 .. caution::
-    Using the decorator may cause unanticipated consequences when the decorated function uses more than one session.
+    Using the decorator may cause unanticipated consequences when the decorated function uses more than one transaction.
 
-Take a look at the following example:
+It should only be used around single transactions because all transactions inside the decorator will be re-executed if there is a connection error during any of them. Take a look at the following example:
 
 .. code-block:: python
 
