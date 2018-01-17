@@ -99,7 +99,10 @@ Decorators
 
 transaction_retry
 ^^^^^^^^^^^^^^^^^
-This decorator automatically retries the wrapped function when a database connection error occur.
+This decorator automatically retries the wrapped function when a database connection error occurs.
+If the optional ``session`` argument is passed it will issue a rollback on it before retrying so the transaction can be processed again.
+The ``session`` argument can either be the ``sqlalchemy.orm.session.Session`` or an ``operator.attrgetter`` object if the session is a class attribute.
+
 
 Usage
 """""
@@ -154,10 +157,63 @@ or using with the ``Database`` dependency provider
 
                 return foo()
 
+        @entrypoint
+        @transaction_retry
+        def create_example_without_using_context_manager(self):
+            session = self.db.get_session()
+            session.add(ExampleModel(data='hello'))
+            session.commit()
 
-This decorator handles sqlalchemy database connection errors raised during the execution of the passed function and tries to execute it again if that happens.
+        @entrypoint
+        @transaction_retry(session=operator.attrgetter('db.session'))
+        def create_example_with_worker_scoped_session(self):
+            self.db.session.add(ExampleModel(data='hello'))
+            self.db.session.commit()
 
-It accepts an optional ``session`` argument and if it is passed it will issue a rollback on it so the transaction can be processed again.
+.. caution::
+    Using the decorator may cause unanticipated consequences when the decorated function uses more than one session.
+
+Take a look at the following example:
+
+.. code-block:: python
+
+    class ExampleService:
+
+        db = Database(DeclBase)
+
+        @entrypoint
+        @transaction_retry
+        def method(self):
+            with self.db.get_session() as session:
+                session.add(something)
+
+            do_something()  # during this a network error occurs
+
+            with self.db.get_session() as session:
+                session.add(something_else)  # throws error because the db connection is gone, method will be executed again
+
+
+Since the method is retried all of the statements are executed twice, including the ones that didn't fail. As a result of that ``something`` will be added twice.
+In order to avoid that one may want to do something like this:
+
+.. code-block:: python
+
+    class ExampleService:
+
+        db = Database(DeclBase)
+
+        @entrypoint
+        def method(self):
+            with self.db.get_session() as session:
+                @transaction_retry(session=session)
+                def add_two_things():
+                    session.add(something)
+                    do_something()
+                    session.add(something_else)
+
+                add_two_things()
+
+In this case the transaction will be rolled back (becase the session is passed to the decorator) and records will not be duplicated.
 
 Running the tests
 -----------------
