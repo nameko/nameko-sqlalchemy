@@ -9,8 +9,9 @@ pylint:
 pytest: test-deps
 	coverage run --concurrency=eventlet --source nameko_sqlalchemy --branch -m \
 		pytest test \
-			--test-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_toxiproxy 3307)/nameko_sqlalchemy_test" \
-			--toxiproxy-api-url=$(shell docker port nameko_sqlalchemy_test_toxiproxy 8474)
+			--test-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_mysql 3306)/nameko_sqlalchemy_test" \
+			--toxiproxy-api-url=$(shell docker port nameko_sqlalchemy_test_toxiproxy 8474) \
+			--toxiproxy-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_toxiproxy 3307)/nameko_sqlalchemy_test"
 	coverage report --show-missing --fail-under=100
 
 test-deps: container-cleanup mysql-setup toxiproxy-setup
@@ -22,7 +23,7 @@ toxiproxy-container:
 	docker run --rm -d -p 8474 -p 3307 --name=nameko_sqlalchemy_test_toxiproxy shopify/toxiproxy
 
 mysql-container:
-	docker run --rm -d -e MYSQL_ROOT_PASSWORD=password -eMYSQL_USER=test_user -e MYSQL_PASSWORD=password -eMYSQL_DATABASE=nameko_sqlalchemy_test --name=nameko_sqlalchemy_test_mysql mysql:5.6
+	docker run --rm -d -p 3306 -e MYSQL_ROOT_PASSWORD=password -eMYSQL_USER=test_user -e MYSQL_PASSWORD=password -eMYSQL_DATABASE=nameko_sqlalchemy_test --name=nameko_sqlalchemy_test_mysql mysql:5.6
 
 toxiproxy-setup: toxiproxy-container
 	@echo Setting up toxiproxy to mysql

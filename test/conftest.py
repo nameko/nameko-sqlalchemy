@@ -3,9 +3,8 @@
 # importing anything before the patch is applied.
 # See http://eventlet.net/doc/patching.html#monkeypatching-the-standard-library
 import eventlet
-eventlet.monkey_patch()  # noqa (code before rest of imports)
-
 import json
+eventlet.monkey_patch()  # noqa (code before rest of imports)
 
 import pytest
 import requests
@@ -46,7 +45,7 @@ def container_factory():
 
 
 @pytest.yield_fixture
-def toxiproxy(toxiproxy_api_url):
+def toxiproxy(toxiproxy_api_url, toxiproxy_db_url):
 
     class Controller(object):
         def __init__(self, api_url):
@@ -70,7 +69,7 @@ def toxiproxy(toxiproxy_api_url):
         def reset(self):
             self.enable()
 
-    if toxiproxy_api_url:
+    if toxiproxy_api_url and toxiproxy_db_url:
         controller = Controller(toxiproxy_api_url)
         controller.reset()
 

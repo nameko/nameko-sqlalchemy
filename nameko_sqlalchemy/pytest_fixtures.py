@@ -24,6 +24,14 @@ def pytest_addoption(parser):
             '(e.g. "127.0.0.1:8474")'
         )
     )
+    parser.addoption(
+        '--toxiproxy-db-url',
+        action='store',
+        dest='TOXIPROXY_DB_URL',
+        help=(
+            'Toxiproxy database url (e.g. "127.0.0.1:3306")'
+        )
+    )
 
 
 @pytest.fixture(scope='session')
@@ -50,6 +58,14 @@ def toxiproxy_api_url(request):
 
     """
     return request.config.getoption('TOXIPROXY_API_URL')
+
+
+@pytest.fixture(scope='session')
+def toxiproxy_db_url(request):
+    """ The url to use to connect to the database through Toxiproxy.
+
+    """
+    return request.config.getoption('TOXIPROXY_DB_URL')
 
 
 @pytest.fixture(scope='session')

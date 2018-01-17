@@ -1,9 +1,7 @@
-import operator
 from weakref import WeakKeyDictionary
 
-import wrapt
 from nameko.extensions import DependencyProvider
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from nameko_sqlalchemy import DB_URIS_KEY
@@ -44,28 +42,3 @@ class DatabaseSession(DependencyProvider):
 
 # backwards compat
 Session = DatabaseSession
-
-
-def run_query(session, query, attempts=3):
-    while attempts > 0:
-        attempts -= 1
-        try:
-            return query()
-        except exc.DBAPIError as exception:
-            if attempts > 0 and exception.connection_invalidated:
-                session.rollback()
-            else:
-                raise
-    else:  # pragma: no cover
-        pass
-
-
-def transaction_retry(session, attempts=3):
-    @wrapt.decorator
-    def wrapper(wrapped, instance, args, kwargs):
-        if isinstance(session, operator.attrgetter):
-            return run_query(session(instance), wrapped, attempts)
-
-        return run_query(session, wrapped, attempts)
-
-    return wrapper

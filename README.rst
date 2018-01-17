@@ -99,7 +99,7 @@ Decorators
 
 transaction_retry
 ^^^^^^^^^^^^^^^^^
-This decorator provides a way to protect against losing uncommitted changes when a database connection error occur.
+This decorator automatically retries the wrapped function when a database connection error occur.
 
 Usage
 """""
@@ -116,13 +116,48 @@ Usage
     Session = sessionmaker(bind=engine)
     db_session = Session()
 
-    @transaction_retry(db_session)
+    @transaction_retry()
     def get_example_data():
-        return ExampleModel.all()
+        db_session.query(ExampleModel).all()
 
     example_data = get_example_data()
 
-This decorator handles sqlalchemy database connection errors that are raised during the execution of the passed query and makes sure that the current transaction is rolled back so that sqlalchemy will replay them when it manages to connect to the database again.
+
+or using with the ``Database`` dependency provider
+
+.. code-block:: python
+
+    from sqlalchemy.ext.declarative import declarative_base
+    from nameko_sqlalchemy import Database, transaction_retry
+
+
+    DeclBase = declarative_base(name='examplebase')
+
+
+    class ExampleService:
+        name = 'exampleservice'
+
+        db = Database(DeclBase)
+
+        @entrypoint
+        @transaction_retry
+        def get_examples(self):
+            with self.db.get_session() as session:
+                return session.query(ExampleModel).all()
+
+        @entrypoint
+        def get_examples_with_retry_inside(self):
+            with self.db.get_session() as session:
+                @transaction_retry(session=session)
+                def foo():
+                    return session.query(ExampleModel).all()
+
+                return foo()
+
+
+This decorator handles sqlalchemy database connection errors raised during the execution of the passed function and tries to execute it again if that happens.
+
+It accepts an optional ``session`` argument and if it is passed it will issue a rollback on it so the transaction can be processed again.
 
 Running the tests
 -----------------
@@ -151,18 +186,20 @@ Once the containers have been set up the tests can be run by running the followi
 Running tests by using py.test command
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Two extra parameters may be passed to `py.test`:
+Three extra parameters may be passed to `py.test`:
 
 * ``test-db-url``: The database URL
 * ``toxiproxy-api-url``: The url of the Toxiproxy HTTP API
+* ``toxiproxy-db-url``: The url of the database through Toxiproxy
 
-If ``toxiproxy-api-url`` parameter is provided the tests assume that the connection to the provided ``test-db-url`` points to a toxiproxy endpoint that is already set up to a database upstream and this proxy can be disabled and enabled via the HTTP API of toxiproxy.
+If ``toxiproxy-api-url`` and ``toxiproxy-db-url`` parameters are provided the tests assume that the toxiproxy endpoint is already set up to a database upstream and this proxy can be disabled and enabled via the HTTP API of toxiproxy.
 
 .. code-block:: shell
 
     py.test test \
         --test-db-url="mysql+pymysql://test_user:password@database_host:3306/nameko_sqlalchemy_test" \
         --toxiproxy-api-url="http://toxiproxy_server:8474"
+        --toxiproxy-db-url="http://toxiproxy_server:3306"
 
-if no ``toxiproxy-api-url`` parameter was provided the tests that require toxiproxy will be skipped.
+if no ``toxiproxy-api-url`` and ``toxiproxy-db-url`` parameter was provided the tests that require toxiproxy will be skipped.
 
