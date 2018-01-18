@@ -2,6 +2,7 @@ sudo: false
 language: python
 
 services:
+  - docker
   - mysql
 
 install:
