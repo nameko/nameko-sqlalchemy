@@ -72,6 +72,14 @@ def test_stop(db_session):
     assert not hasattr(db_session, 'engine')
 
 
+def test_kill(db_session):
+    db_session.setup()
+    assert db_session.engine
+
+    db_session.kill()
+    assert not hasattr(db_session, 'engine')
+
+
 def test_get_dependency(db_session):
     db_session.setup()
 
