@@ -1,7 +1,7 @@
 nameko-sqlalchemy
 =================
 
-DependencyProviders and utilities for `nameko <http://nameko.readthedocs.org>`_services to interface with a relational database using SQLAlchemy.
+DependencyProviders and utilities for `nameko <http://http://nameko.readthedocs.org>`_ services to interface with a relational database using SQLAlchemy.
 
 
 Usage
@@ -30,7 +30,7 @@ Usage
             ...
 
 
-The `nameko_sqlalchemy.Database` DependencyProvider can be used in three ways:
+The ``nameko_sqlalchemy.Database`` DependencyProvider can be used in three ways:
 
 As a context manager that issues a commit or rollback on exit:
 
@@ -68,7 +68,7 @@ To manage a session that is lazily opened on first use and closed when the Namek
         self.db.session.commit()
 
 
-The `nameko_sqlalchemy.DatabaseSession` DependencyProvider maintains the original interface from the early versions of the library. It behaves similarly to the third example above, except that the session is opened before the entrypoint fires, rather than lazily.
+The ``nameko_sqlalchemy.DatabaseSession`` DependencyProvider maintains the original interface from the early versions of the library. It behaves similarly to the third example above, except that the session is opened before the entrypoint fires, rather than lazily.
 
 
 .. code-block:: python
@@ -171,6 +171,7 @@ or using with the ``Database`` dependency provider
             self.db.session.commit()
 
 .. caution::
+
     Using the decorator may cause unanticipated consequences when the decorated function uses more than one transaction.
 
 It should only be used around single transactions because all transactions inside the decorator will be re-executed if there is a connection error during any of them. Take a look at the following example:
