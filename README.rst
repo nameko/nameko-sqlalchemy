@@ -73,15 +73,15 @@ The `nameko_sqlalchemy.DatabaseSession` DependencyProvider maintains the origina
 
 .. code-block:: python
 
-class Service:
-    name = "legacy"
+    class Service:
+        name = "legacy"
 
-    session = DatabaseSession()
+        session = DatabaseSession()
 
-    @entrypoint
-    def method(self):
-        self.session.add(...)
-        self.session.commit()
+        @entrypoint
+        def method(self):
+            self.session.add(...)
+            self.session.commit()
 
 
 
