@@ -1,31 +1,88 @@
 nameko-sqlalchemy
 =================
 
-A SQLAlchemy dependency for `nameko <http://nameko.readthedocs.org>`_, enabling services to interface with a relational database.
+DependencyProviders and utilities for `nameko <http://nameko.readthedocs.org>`_services to interface with a relational database using SQLAlchemy.
+
 
 Usage
 -----
 
 .. code-block:: python
 
-    from nameko_sqlalchemy import Session
+    from nameko_sqlalchemy import Database
 
     from .models import Model, DeclarativeBase
 
     class Service(object):
+        name = "service"
 
-        session = Session(DeclarativeBase)
+        db = Database(DeclarativeBase)
 
         @entrypoint
         def write_to_db(self):
             model = Model(...)
-            self.session.add(model)
-            self.session.commit()
+            with self.db.get_session() as session:
+                session.add(model)
 
         @entrypoint
         def query_db(self):
-            queryset = self.session.query(Model).filter(...)
+            queryset = self.db.session.query(Model).filter(...)
             ...
+
+
+The `nameko_sqlalchemy.Database` DependencyProvider can be used in three ways:
+
+As a context manager that issues a commit or rollback on exit:
+
+.. code-block:: python
+
+    @entrypoint
+    def method(self):
+        with self.db.get_session() as session:
+            session.add(model)
+
+To explicitly retrieve sessions that can be manually manipulated:
+
+.. code-block:: python
+
+    @entrypoint
+    def method(self):
+        session1 = self.db.get_session()
+        session1.add(...)
+        session2 = self.db.get_session()
+        session2.add(...)
+        session1.commit()
+        session1.close()
+        session2.commit()
+        session2.close()
+
+
+To manage a session that is lazily opened on first use and closed when the Nameko entrypoint exits:
+
+
+.. code-block:: python
+
+    @entrypoint
+    def method(self):
+        self.db.session.add(...)
+        self.db.session.commit()
+
+
+The `nameko_sqlalchemy.DatabaseSession` DependencyProvider maintains the original interface from the early versions of the library. It behaves similarly to the third example above, except that the session is opened before the entrypoint fires, rather than lazily.
+
+
+.. code-block:: python
+
+class Service:
+    name = "legacy"
+
+    session = DatabaseSession()
+
+    @entrypoint
+    def method(self):
+        self.session.add(...)
+        self.session.commit()
+
 
 
 Database drivers
@@ -36,63 +93,6 @@ You may use any database `driver compatible with SQLAlchemy <http://docs.sqlalch
 * `pysqlite <http://docs.sqlalchemy.org/en/rel_0_9/dialects/sqlite.html#module-sqlalchemy.dialects.sqlite.pysqlite>`_
 * `pymysql <http://docs.sqlalchemy.org/en/rel_0_9/dialects/mysql.html#module-sqlalchemy.dialects.mysql.pymysql>`_
 
-
-Pytest fixtures
----------------
-
-Pytest fixtures to allow for easy testing are available.
-
-* ``db_session`` fixture (which depends on ``db_connection`` fixture) will instantiate test database and tear it down at the end of each test.
-* ``model_base`` fixture can be overridden to provide custom ``declarative_base``.
-* ``db_engine_options`` fixture can be overriden to provide additional keyword arguments to ``sqlalchemy.create_engine``.
-
-.. code-block:: python
-
-    import pytest
-
-    from sqlalchemy import Column, Integer, String
-    from sqlalchemy.ext.declarative import declarative_base
-
-
-    class Base(object):
-        pass
-
-
-    DeclarativeBase = declarative_base(cls=Base)
-
-
-    class User(DeclarativeBase):
-        __tablename__ = "users"
-
-        id = Column(Integer, primary_key=True)
-        name = Column(String)
-
-
-    @pytest.fixture(scope='session')
-    def model_base():
-        return DeclarativeBase
-
-
-    @pytest.fixture(scope='session')
-    def db_engine_options():
-        return dict(client_encoding='utf8')
-
-
-    def test_users(db_session):
-        user = User(id=1, name='Joe')
-        db_session.add(user)
-        db_session.commit()
-        saved_user = db_session.query(User).get(user.id)
-        assert saved_user.id > 0
-        assert saved_user.name == 'Joe'
-
-When running tests you can pass database test url with ``--test-db-url`` parameter or override ``db_url`` fixture.
-By default SQLite memory database will be used.
-
-.. code-block:: shell
-
-    py.test test --test-db-url=sqlite:///test_db.sql
-    py.test test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
 
 Decorators
 ----------
@@ -214,6 +214,65 @@ In order to avoid that one may want to do something like this:
                 add_two_things()
 
 In this case the failed transaction will be rolled back (becase the session is passed to the decorator) and records will not be duplicated.
+
+Pytest fixtures
+---------------
+
+Pytest fixtures to allow for easy testing are available.
+
+* ``db_session`` fixture (which depends on ``db_connection`` fixture) will instantiate test database and tear it down at the end of each test.
+* ``model_base`` fixture can be overridden to provide custom ``declarative_base``.
+* ``db_engine_options`` fixture can be overriden to provide additional keyword arguments to ``sqlalchemy.create_engine``.
+
+
+.. code-block:: python
+
+    import pytest
+
+    from sqlalchemy import Column, Integer, String
+    from sqlalchemy.ext.declarative import declarative_base
+
+
+    class Base(object):
+        pass
+
+
+    DeclarativeBase = declarative_base(cls=Base)
+
+
+    class User(DeclarativeBase):
+        __tablename__ = "users"
+
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+
+
+    @pytest.fixture(scope='session')
+    def model_base():
+        return DeclarativeBase
+
+
+    @pytest.fixture(scope='session')
+    def db_engine_options():
+        return dict(client_encoding='utf8')
+
+
+    def test_users(db_session):
+        user = User(id=1, name='Joe')
+        db_session.add(user)
+        db_session.commit()
+        saved_user = db_session.query(User).get(user.id)
+        assert saved_user.id > 0
+        assert saved_user.name == 'Joe'
+
+When running tests you can pass database test url with ``--test-db-url`` parameter or override ``db_url`` fixture.
+By default SQLite memory database will be used.
+
+.. code-block:: shell
+
+    py.test test --test-db-url=sqlite:///test_db.sql
+    py.test test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
+
 
 Running the tests
 -----------------
