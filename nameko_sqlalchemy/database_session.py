@@ -28,6 +28,10 @@ class DatabaseSession(DependencyProvider):
         self.engine.dispose()
         del self.engine
 
+    def kill(self):
+        self.engine.dispose()
+        del self.engine
+
     def get_dependency(self, worker_ctx):
 
         session_cls = sessionmaker(bind=self.engine)
