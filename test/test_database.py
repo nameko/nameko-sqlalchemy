@@ -161,6 +161,22 @@ class TestGetSessionContextManagerUnit:
         rollback.assert_called()
         close.assert_called()
 
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back_and_closes_on_commit_error(
+        self, close, commit, rollback, db
+    ):
+
+        commit.side_effect = Exception('Yo!')
+
+        with pytest.raises(Exception):
+            with db.get_session() as session:
+				pass
+
+        rollback.assert_called()
+        close.assert_called()
+
 
 class BaseTestEndToEnd:
 

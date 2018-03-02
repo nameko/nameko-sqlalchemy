@@ -15,11 +15,17 @@ class Session(BaseSession):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            self.rollback()
-        else:
-            self.commit()
-        self.close()
+        try:
+            if exc_type:
+                self.rollback()
+            else:
+                try:
+                    self.commit()
+                except Exception:
+                    self.rollback()
+                    raise
+        finally:
+            self.close()
 
 
 class DatabaseWrapper(object):
