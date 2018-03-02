@@ -153,8 +153,7 @@ class TestGetSessionContextManagerUnit:
     def test_rolls_back_and_closes(self, close, commit, rollback, db):
 
         with pytest.raises(Exception):
-            with db.get_session() as session:
-                assert isinstance(session, Session)
+            with db.get_session():
                 raise Exception('Yo!')
 
         commit.assert_not_called()
@@ -171,11 +170,59 @@ class TestGetSessionContextManagerUnit:
         commit.side_effect = Exception('Yo!')
 
         with pytest.raises(Exception):
-            with db.get_session() as session:
-				pass
+            with db.get_session():
+                pass
 
         rollback.assert_called()
         close.assert_called()
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_no_close_on_exit(
+        self, close, commit, rollback, db
+    ):
+
+        with db.get_session(close_on_exit=False) as session_one:
+            assert isinstance(session_one, Session)
+
+        commit.assert_called()
+        rollback.assert_not_called()
+        close.assert_not_called()
+
+        with db.get_session() as session_two:
+            assert isinstance(session_two, Session)
+
+        assert commit.call_count == 2
+        rollback.assert_not_called()
+        close.assert_called()
+
+        assert db._context_sessions == [session_one, session_two]
+
+        assert close.call_count == 1
+        db.close()
+        assert close.call_count == 3
+
+    def test_worker_teardown(self, dependency_provider):
+        dependency_provider.setup()
+
+        worker_ctx = Mock(spec=WorkerContext)
+        db = dependency_provider.get_dependency(worker_ctx)
+
+        with db.get_session(close_on_exit=False) as session_one:
+            assert isinstance(session_one, Session)
+
+        with db.get_session() as session_two:
+            assert isinstance(session_two, Session)
+
+        session_one.add(ExampleModel())
+        session_two.add(ExampleModel())
+        assert session_one.new
+        assert session_two.new
+        dependency_provider.worker_teardown(worker_ctx)
+        assert worker_ctx not in dependency_provider.dbs
+        assert not session_one.new  # session.close() rolls back new objects
+        assert not session_two.new  # session.close() rolls back new objects
 
 
 class BaseTestEndToEnd:
