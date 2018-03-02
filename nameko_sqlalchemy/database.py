@@ -12,7 +12,7 @@ DB_URIS_KEY = 'DB_URIS'
 class Session(BaseSession):
 
     def __init__(self, *args, **kwargs):
-        self.close_on_exit = kwargs.pop('close_on_exit', True)
+        self.close_on_exit = kwargs.pop('close_on_exit', False)
         super(Session, self).__init__(*args, **kwargs)
 
     def __enter__(self):
@@ -40,7 +40,7 @@ class DatabaseWrapper(object):
         self._worker_session = None
         self._context_sessions = []
 
-    def get_session(self, close_on_exit=True):
+    def get_session(self, close_on_exit=False):
         session = self.Session(close_on_exit=close_on_exit)
         self._context_sessions.append(session)
         return session

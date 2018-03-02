@@ -138,9 +138,21 @@ class TestGetSessionContextManagerUnit:
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
     @patch.object(Session, 'close')
-    def test_comits_and_closes(self, close, commit, rollback, db):
+    def test_comits(self, close, commit, rollback, db):
 
         with db.get_session() as session:
+            assert isinstance(session, Session)
+
+        commit.assert_called()
+        rollback.assert_not_called()
+        close.assert_not_called()
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_comits_and_closes(self, close, commit, rollback, db):
+
+        with db.get_session(close_on_exit=True) as session:
             assert isinstance(session, Session)
 
         commit.assert_called()
@@ -150,7 +162,7 @@ class TestGetSessionContextManagerUnit:
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
     @patch.object(Session, 'close')
-    def test_rolls_back_and_closes(self, close, commit, rollback, db):
+    def test_rolls_back(self, close, commit, rollback, db):
 
         with pytest.raises(Exception):
             with db.get_session():
@@ -158,7 +170,36 @@ class TestGetSessionContextManagerUnit:
 
         commit.assert_not_called()
         rollback.assert_called()
+        close.assert_not_called()
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back_and_closes(self, close, commit, rollback, db):
+
+        with pytest.raises(Exception):
+            with db.get_session(close_on_exit=True):
+                raise Exception('Yo!')
+
+        commit.assert_not_called()
+        rollback.assert_called()
         close.assert_called()
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back_on_commit_error(
+        self, close, commit, rollback, db
+    ):
+
+        commit.side_effect = Exception('Yo!')
+
+        with pytest.raises(Exception):
+            with db.get_session():
+                pass
+
+        rollback.assert_called()
+        close.assert_not_called()
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -170,7 +211,7 @@ class TestGetSessionContextManagerUnit:
         commit.side_effect = Exception('Yo!')
 
         with pytest.raises(Exception):
-            with db.get_session():
+            with db.get_session(close_on_exit=True):
                 pass
 
         rollback.assert_called()
@@ -183,14 +224,14 @@ class TestGetSessionContextManagerUnit:
         self, close, commit, rollback, db
     ):
 
-        with db.get_session(close_on_exit=False) as session_one:
+        with db.get_session() as session_one:
             assert isinstance(session_one, Session)
 
         commit.assert_called()
         rollback.assert_not_called()
         close.assert_not_called()
 
-        with db.get_session() as session_two:
+        with db.get_session(close_on_exit=True) as session_two:
             assert isinstance(session_two, Session)
 
         assert commit.call_count == 2
