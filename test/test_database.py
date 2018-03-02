@@ -355,3 +355,38 @@ class TestWorkerScopeSessionEndToEnd(BaseTestEndToEnd):
         # read through the service
         with entrypoint_hook(container, 'read') as read:
             assert read('spam') == 'ham'
+
+
+class TestWorkerScopeSessionInContextEndToEnd(BaseTestEndToEnd):
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclBase)
+
+        @dummy
+        def write(self, key, value):
+            with self.db.session as session:
+                obj = ExampleModel(key=key, value=value)
+                session.add(obj)
+
+        @dummy
+        def read(self, key):
+            with self.db.session as session:
+                return session.query(ExampleModel).get(key).value
+
+    def test_successful_write_and_read(slf, container, db_uri):
+
+        # write through the service
+        with entrypoint_hook(container, 'write') as write:
+            write(key='spam', value='ham')
+
+        # verify changes written to disk
+        entries = list(
+            create_engine(db_uri).execute(
+                'SELECT key, value FROM example LIMIT 1'))
+        assert entries == [('spam', 'ham',)]
+
+        # read through the service
+        with entrypoint_hook(container, 'read') as read:
+            assert read('spam') == 'ham'
