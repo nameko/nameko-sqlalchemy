@@ -196,14 +196,39 @@ class TestGetSessionContextManagerUnit:
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
     @patch.object(Session, 'close')
-    def test_comits_and_closes(self, close, commit, rollback, db):
+    def test_comits(self, close, commit, rollback, db):
 
         with db.get_session() as session:
             assert isinstance(session, Session)
 
-        commit.assert_called()
-        rollback.assert_not_called()
-        close.assert_called()
+        assert commit.called
+        assert not rollback.called
+        assert not close.called
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_comits_and_closes(self, close, commit, rollback, db):
+
+        with db.get_session(close_on_exit=True) as session:
+            assert isinstance(session, Session)
+
+        assert commit.called
+        assert not rollback.called
+        assert close.called
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back(self, close, commit, rollback, db):
+
+        with pytest.raises(Exception):
+            with db.get_session():
+                raise Exception('Yo!')
+
+        assert not commit.called
+        assert rollback.called
+        assert not close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -211,13 +236,92 @@ class TestGetSessionContextManagerUnit:
     def test_rolls_back_and_closes(self, close, commit, rollback, db):
 
         with pytest.raises(Exception):
-            with db.get_session() as session:
-                assert isinstance(session, Session)
+            with db.get_session(close_on_exit=True):
                 raise Exception('Yo!')
 
-        commit.assert_not_called()
-        rollback.assert_called()
-        close.assert_called()
+        assert not commit.called
+        assert rollback.called
+        assert close.called
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back_on_commit_error(
+        self, close, commit, rollback, db
+    ):
+
+        commit.side_effect = Exception('Yo!')
+
+        with pytest.raises(Exception):
+            with db.get_session():
+                pass
+
+        assert rollback.called
+        assert not close.called
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_rolls_back_and_closes_on_commit_error(
+        self, close, commit, rollback, db
+    ):
+
+        commit.side_effect = Exception('Yo!')
+
+        with pytest.raises(Exception):
+            with db.get_session(close_on_exit=True):
+                pass
+
+        assert rollback.called
+        assert close.called
+
+    @patch.object(Session, 'rollback')
+    @patch.object(Session, 'commit')
+    @patch.object(Session, 'close')
+    def test_no_close_on_exit(
+        self, close, commit, rollback, db
+    ):
+
+        with db.get_session() as session_one:
+            assert isinstance(session_one, Session)
+
+        assert commit.called
+        assert not rollback.called
+        assert not close.called
+
+        with db.get_session(close_on_exit=True) as session_two:
+            assert isinstance(session_two, Session)
+
+        assert commit.call_count == 2
+        assert not rollback.called
+        assert close.called
+
+        assert db._context_sessions == [session_one, session_two]
+
+        assert close.call_count == 1
+        db.close()
+        assert close.call_count == 3
+
+    def test_worker_teardown(self, dependency_provider):
+        dependency_provider.setup()
+
+        worker_ctx = Mock(spec=WorkerContext)
+        db = dependency_provider.get_dependency(worker_ctx)
+
+        with db.get_session(close_on_exit=True) as session_one:
+            assert isinstance(session_one, Session)
+
+        with db.get_session(close_on_exit=False) as session_two:
+            assert isinstance(session_two, Session)
+
+        session_one.add(ExampleModel())
+        session_two.add(ExampleModel())
+        assert session_one.new
+        assert session_two.new
+        dependency_provider.worker_teardown(worker_ctx)
+        assert worker_ctx not in dependency_provider.dbs
+        assert not session_one.new  # session.close() rolls back new objects
+        assert not session_two.new  # session.close() rolls back new objects
 
 
 class BaseTestEndToEnd:
@@ -334,6 +438,41 @@ class TestWorkerScopeSessionEndToEnd(BaseTestEndToEnd):
         @dummy
         def read(self, key):
             return self.db.session.query(ExampleModel).get(key).value
+
+    def test_successful_write_and_read(slf, container, db_uri):
+
+        # write through the service
+        with entrypoint_hook(container, 'write') as write:
+            write(key='spam', value='ham')
+
+        # verify changes written to disk
+        entries = list(
+            create_engine(db_uri).execute(
+                'SELECT key, value FROM example LIMIT 1'))
+        assert entries == [('spam', 'ham',)]
+
+        # read through the service
+        with entrypoint_hook(container, 'read') as read:
+            assert read('spam') == 'ham'
+
+
+class TestWorkerScopeSessionInContextEndToEnd(BaseTestEndToEnd):
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclBase)
+
+        @dummy
+        def write(self, key, value):
+            with self.db.session as session:
+                obj = ExampleModel(key=key, value=value)
+                session.add(obj)
+
+        @dummy
+        def read(self, key):
+            with self.db.session as session:
+                return session.query(ExampleModel).get(key).value
 
     def test_successful_write_and_read(slf, container, db_uri):
 
