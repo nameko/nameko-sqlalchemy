@@ -46,11 +46,13 @@ class DatabaseWrapper(object):
 
 class Database(DependencyProvider):
 
-    def __init__(self, declarative_base):
+    def __init__(
+        self, declarative_base, session_options=None, engine_options=None
+    ):
         self.declarative_base = declarative_base
         self.dbs = WeakKeyDictionary()
-        self.session_options = {}
-        self.engine_options = {}
+        self.session_options = session_options or {}
+        self.engine_options = engine_options or {}
 
     def setup(self):
         service_name = self.container.service_name

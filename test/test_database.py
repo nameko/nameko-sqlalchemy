@@ -67,6 +67,48 @@ def test_session_options_config(config, dependency_provider):
     assert dependency_provider.Session.kw['autoflush'] is False
 
 
+def test_engine_options_setup(config, container):
+
+    # instantiation engine options ...
+    engine_options = {
+        'pool_size': 200,
+        'pool_recycle': 3600,
+    }
+    dependency_provider = Database(
+        DeclBase, engine_options=engine_options)
+    dependency_provider = dependency_provider.bind(
+        container, 'database')
+
+    # ... can be overridden by config engine options
+    config[DB_ENGINE_OPTIONS_KEY] = {'pool_size': 100}
+
+    dependency_provider.setup()
+
+    assert dependency_provider.engine.pool.size == 100
+    assert dependency_provider.engine.pool._recycle == 3600
+
+
+def test_session_options_setup(config, container):
+
+    # instantiation session options ...
+    session_options = {
+        'autoflush': False,
+        'expire_on_commit': False,
+    }
+    dependency_provider = Database(
+        DeclBase, session_options=session_options)
+    dependency_provider = dependency_provider.bind(
+        container, 'database')
+
+    # ... can be overridden by config session options
+    config[DB_SESSION_OPTIONS_KEY] = {'autoflush': True}
+
+    dependency_provider.setup()
+
+    assert dependency_provider.Session.kw['autoflush'] is True
+    assert dependency_provider.Session.kw['expire_on_commit'] is False
+
+
 def test_stop(dependency_provider):
     dependency_provider.setup()
     assert dependency_provider.engine
