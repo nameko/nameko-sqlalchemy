@@ -250,10 +250,10 @@ class TestGetSessionContextManagerUnit:
         worker_ctx = Mock(spec=WorkerContext)
         db = dependency_provider.get_dependency(worker_ctx)
 
-        with db.get_session(close_on_exit=False) as session_one:
+        with db.get_session(close_on_exit=True) as session_one:
             assert isinstance(session_one, Session)
 
-        with db.get_session() as session_two:
+        with db.get_session(close_on_exit=False) as session_two:
             assert isinstance(session_two, Session)
 
         session_one.add(ExampleModel())
