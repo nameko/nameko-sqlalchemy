@@ -15,6 +15,23 @@ def pytest_addoption(parser):
             '"postgresql://username:password@localhost/test")'
         )
     )
+    parser.addoption(
+        '--toxiproxy-api-url',
+        action='store',
+        dest='TOXIPROXY_API_URL',
+        help=(
+            'Toxiproxy HTTP API address for simulating network errors '
+            '(e.g. "127.0.0.1:8474")'
+        )
+    )
+    parser.addoption(
+        '--toxiproxy-db-url',
+        action='store',
+        dest='TOXIPROXY_DB_URL',
+        help=(
+            'Toxiproxy database url (e.g. "127.0.0.1:3306")'
+        )
+    )
 
 
 @pytest.fixture(scope='session')
@@ -33,6 +50,22 @@ def db_url(request):
         and schema will be recreated on each test run.
     """
     return request.config.getoption('TEST_DB_URL')
+
+
+@pytest.fixture(scope='session')
+def toxiproxy_api_url(request):
+    """ The url to use to connect to Toxiproxy API.
+
+    """
+    return request.config.getoption('TOXIPROXY_API_URL')
+
+
+@pytest.fixture(scope='session')
+def toxiproxy_db_url(request):
+    """ The url to use to connect to the database through Toxiproxy.
+
+    """
+    return request.config.getoption('TOXIPROXY_DB_URL')
 
 
 @pytest.fixture(scope='session')

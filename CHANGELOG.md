@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+Version 1.1.0
+-------------
+
+Released 2018-02-24
+
+* Added `transaction_retry` decorator to reattempt transactions
+  after temporary loss of connectivity to the database
+* Added missing cleanup that left connections open on kill (fixes #12)
+
 Version 1.0.0
 -------------
 

@@ -76,6 +76,10 @@ class Database(DependencyProvider):
         self.engine.dispose()
         del self.engine
 
+    def kill(self):
+        self.engine.dispose()
+        del self.engine
+
     def worker_teardown(self, worker_ctx):
         db = self.dbs.pop(worker_ctx)
         db.close()

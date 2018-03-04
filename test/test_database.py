@@ -75,6 +75,14 @@ def test_stop(dependency_provider):
     assert not hasattr(dependency_provider, 'engine')
 
 
+def test_kill(dependency_provider):
+    dependency_provider.setup()
+    assert dependency_provider.engine
+
+    dependency_provider.kill()
+    assert not hasattr(dependency_provider, 'engine')
+
+
 class TestWorkerScopeSessionUnit:
 
     def test_get_dependency(self, dependency_provider):
