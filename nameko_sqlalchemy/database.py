@@ -11,15 +11,26 @@ DB_URIS_KEY = 'DB_URIS'
 
 class Session(BaseSession):
 
+    def __init__(self, *args, **kwargs):
+        self.close_on_exit = kwargs.pop('close_on_exit', False)
+        super(Session, self).__init__(*args, **kwargs)
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            self.rollback()
-        else:
-            self.commit()
-        self.close()
+        try:
+            if exc_type:
+                self.rollback()
+            else:
+                try:
+                    self.commit()
+                except Exception:
+                    self.rollback()
+                    raise
+        finally:
+            if self.close_on_exit:
+                self.close()
 
 
 class DatabaseWrapper(object):
@@ -27,9 +38,12 @@ class DatabaseWrapper(object):
     def __init__(self, Session):
         self.Session = Session
         self._worker_session = None
+        self._context_sessions = []
 
-    def get_session(self):
-        return self.Session()
+    def get_session(self, close_on_exit=False):
+        session = self.Session(close_on_exit=close_on_exit)
+        self._context_sessions.append(session)
+        return session
 
     @property
     def session(self):
@@ -40,6 +54,8 @@ class DatabaseWrapper(object):
     def close(self):
         if self._worker_session:
             self._worker_session.close()
+        for session in self._context_sessions:
+            session.close()
 
 
 class Database(DependencyProvider):
