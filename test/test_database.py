@@ -143,9 +143,9 @@ class TestGetSessionContextManagerUnit:
         with db.get_session() as session:
             assert isinstance(session, Session)
 
-        commit.assert_called()
-        rollback.assert_not_called()
-        close.assert_not_called()
+        assert commit.called
+        assert not rollback.called
+        assert not close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -155,9 +155,9 @@ class TestGetSessionContextManagerUnit:
         with db.get_session(close_on_exit=True) as session:
             assert isinstance(session, Session)
 
-        commit.assert_called()
-        rollback.assert_not_called()
-        close.assert_called()
+        assert commit.called
+        assert not rollback.called
+        assert close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -168,9 +168,9 @@ class TestGetSessionContextManagerUnit:
             with db.get_session():
                 raise Exception('Yo!')
 
-        commit.assert_not_called()
-        rollback.assert_called()
-        close.assert_not_called()
+        assert not commit.called
+        assert rollback.called
+        assert not close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -181,9 +181,9 @@ class TestGetSessionContextManagerUnit:
             with db.get_session(close_on_exit=True):
                 raise Exception('Yo!')
 
-        commit.assert_not_called()
-        rollback.assert_called()
-        close.assert_called()
+        assert not commit.called
+        assert rollback.called
+        assert close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -198,8 +198,8 @@ class TestGetSessionContextManagerUnit:
             with db.get_session():
                 pass
 
-        rollback.assert_called()
-        close.assert_not_called()
+        assert rollback.called
+        assert not close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -214,8 +214,8 @@ class TestGetSessionContextManagerUnit:
             with db.get_session(close_on_exit=True):
                 pass
 
-        rollback.assert_called()
-        close.assert_called()
+        assert rollback.called
+        assert close.called
 
     @patch.object(Session, 'rollback')
     @patch.object(Session, 'commit')
@@ -227,16 +227,16 @@ class TestGetSessionContextManagerUnit:
         with db.get_session() as session_one:
             assert isinstance(session_one, Session)
 
-        commit.assert_called()
-        rollback.assert_not_called()
-        close.assert_not_called()
+        assert commit.called
+        assert not rollback.called
+        assert not close.called
 
         with db.get_session(close_on_exit=True) as session_two:
             assert isinstance(session_two, Session)
 
         assert commit.call_count == 2
-        rollback.assert_not_called()
-        close.assert_called()
+        assert not rollback.called
+        assert close.called
 
         assert db._context_sessions == [session_one, session_two]
 
