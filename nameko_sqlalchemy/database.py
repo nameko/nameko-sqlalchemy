@@ -81,11 +81,6 @@ class Database(DependencyProvider):
             'declarative_base_name': declarative_base_name,
         })
 
-        self.session_options.update(
-            self.container.config.get(DB_SESSION_OPTIONS_KEY, {}))
-        self.engine_options.update(
-            self.container.config.get(DB_ENGINE_OPTIONS_KEY, {}))
-
         self.engine = create_engine(self.db_uri, **self.engine_options)
         self.Session = sessionmaker(
             bind=self.engine, class_=Session, **self.session_options)

@@ -4,11 +4,7 @@ from nameko.extensions import DependencyProvider
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from nameko_sqlalchemy import (
-    DB_URIS_KEY,
-    DB_ENGINE_OPTIONS_KEY,
-    DB_SESSION_OPTIONS_KEY
-)
+from nameko_sqlalchemy import DB_URIS_KEY
 
 
 class DatabaseSession(DependencyProvider):
@@ -30,11 +26,6 @@ class DatabaseSession(DependencyProvider):
             'service_name': service_name,
             'declarative_base_name': decl_base_name,
         })
-
-        self.session_options.update(
-            self.container.config.get(DB_SESSION_OPTIONS_KEY, {}))
-        self.engine_options.update(
-            self.container.config.get(DB_ENGINE_OPTIONS_KEY, {}))
 
         self.engine = create_engine(self.db_uri, **self.engine_options)
         self.Session = sessionmaker(bind=self.engine, **self.session_options)

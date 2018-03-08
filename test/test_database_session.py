@@ -12,8 +12,6 @@ from sqlalchemy.orm.session import Session
 from nameko_sqlalchemy import (
     DatabaseSession,
     DB_URIS_KEY,
-    DB_ENGINE_OPTIONS_KEY,
-    DB_SESSION_OPTIONS_KEY
 )
 
 
@@ -71,34 +69,16 @@ def test_setup(db_session):
     assert isinstance(db_session.engine, Engine)
 
 
-def test_engine_options_config(config, db_session):
-    config[DB_ENGINE_OPTIONS_KEY] = {'pool_size': 11}
-    db_session.setup()
-
-    assert db_session.engine.pool.size == 11
-
-
-def test_session_options_config(config, db_session):
-    config[DB_SESSION_OPTIONS_KEY] = {'autoflush': False}
-    db_session.setup()
-
-    assert db_session.Session.kw['autoflush'] is False
-
-
 def test_engine_options_setup(config, container):
 
-    # instantiation engine options ...
     engine_options = {
-        'pool_size': 200,
+        'pool_size': 100,
         'pool_recycle': 3600,
     }
     db_session = DatabaseSession(
         DeclBase, engine_options=engine_options)
     db_session = db_session.bind(
         container, 'database')
-
-    # ... can be overridden by config engine options
-    config[DB_ENGINE_OPTIONS_KEY] = {'pool_size': 100}
 
     db_session.setup()
 
@@ -108,7 +88,6 @@ def test_engine_options_setup(config, container):
 
 def test_session_options_setup(config, container):
 
-    # instantiation session options ...
     session_options = {
         'autoflush': False,
         'expire_on_commit': False,
@@ -118,12 +97,9 @@ def test_session_options_setup(config, container):
     db_session = db_session.bind(
         container, 'database')
 
-    # ... can be overridden by config session options
-    config[DB_SESSION_OPTIONS_KEY] = {'autoflush': True}
-
     db_session.setup()
 
-    assert db_session.Session.kw['autoflush'] is True
+    assert db_session.Session.kw['autoflush'] is False
     assert db_session.Session.kw['expire_on_commit'] is False
 
 
