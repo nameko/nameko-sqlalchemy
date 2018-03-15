@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+Version 1.2.0
+-------------
+
+Released 2018-03-15
+
+* Fix context manager so transactions are rolled back on commit errors
+  (fixes #25)
+* Change default behaviour of context manager so sessions are closed
+  on worker teardown rather than context manager exit (closes #24)
+  
 Version 1.1.0
 -------------
 
