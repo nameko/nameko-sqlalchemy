@@ -51,6 +51,40 @@ def test_setup(dependency_provider):
     assert isinstance(dependency_provider.engine, Engine)
 
 
+def test_engine_options_setup(config, container):
+
+    engine_options = {
+        'pool_size': 100,
+        'pool_recycle': 3600,
+    }
+    dependency_provider = Database(
+        DeclBase, engine_options=engine_options)
+    dependency_provider = dependency_provider.bind(
+        container, 'database')
+
+    dependency_provider.setup()
+
+    assert dependency_provider.engine.pool.size == 100
+    assert dependency_provider.engine.pool._recycle == 3600
+
+
+def test_session_options_setup(config, container):
+
+    session_options = {
+        'autoflush': False,
+        'expire_on_commit': False,
+    }
+    dependency_provider = Database(
+        DeclBase, session_options=session_options)
+    dependency_provider = dependency_provider.bind(
+        container, 'database')
+
+    dependency_provider.setup()
+
+    assert dependency_provider.Session.kw['autoflush'] is False
+    assert dependency_provider.Session.kw['expire_on_commit'] is False
+
+
 def test_stop(dependency_provider):
     dependency_provider.setup()
     assert dependency_provider.engine
