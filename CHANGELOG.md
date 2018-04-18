@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+Version 1.3.0
+-------------
+
+Released 2018-04-18
+
+* Both DependencyProviders now accept `engine_options` and `session_options`
+  parameters for configuring the SQLAlchemy engine and sessions respectively.
+
 Version 1.2.0
 -------------
 
