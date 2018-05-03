@@ -306,6 +306,10 @@ class BaseTestEndToEnd:
     def db_uri(self, tmpdir):
         return 'sqlite:///{}'.format(tmpdir.join("db").strpath)
 
+    @pytest.fixture(scope='session')
+    def model_base(self):
+        return DeclBase
+
     @pytest.fixture
     def container(self, container_factory, db_uri):
 
