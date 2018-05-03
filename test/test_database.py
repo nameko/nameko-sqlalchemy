@@ -3,7 +3,7 @@ from weakref import WeakKeyDictionary
 import pytest
 from mock import Mock, patch
 from nameko.containers import ServiceContainer, WorkerContext
-from nameko.testing.services import dummy, entrypoint_hook
+from nameko.testing.services import dummy, entrypoint_hook, worker_factory
 from nameko_sqlalchemy.database import (
     DB_URIS_KEY,
     Database,
@@ -362,6 +362,13 @@ class TestGetSessionEndToEnd(BaseTestEndToEnd):
         with entrypoint_hook(container, 'read') as read:
             assert read('spam') == 'ham'
 
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write('spam', 'ham')
+        assert service.read('spam') == 'ham'
+
 
 class TestGetSessionContextManagerEndToEnd(BaseTestEndToEnd):
 
@@ -397,6 +404,13 @@ class TestGetSessionContextManagerEndToEnd(BaseTestEndToEnd):
         with entrypoint_hook(container, 'read') as read:
             assert read('spam') == 'ham'
 
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write('spam', 'ham')
+        assert service.read('spam') == 'ham'
+
 
 class TestWorkerScopeSessionEndToEnd(BaseTestEndToEnd):
 
@@ -430,6 +444,13 @@ class TestWorkerScopeSessionEndToEnd(BaseTestEndToEnd):
         # read through the service
         with entrypoint_hook(container, 'read') as read:
             assert read('spam') == 'ham'
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write('spam', 'ham')
+        assert service.read('spam') == 'ham'
 
 
 class TestWorkerScopeSessionInContextEndToEnd(BaseTestEndToEnd):
@@ -465,3 +486,10 @@ class TestWorkerScopeSessionInContextEndToEnd(BaseTestEndToEnd):
         # read through the service
         with entrypoint_hook(container, 'read') as read:
             assert read('spam') == 'ham'
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write('spam', 'ham')
+        assert service.read('spam') == 'ham'
