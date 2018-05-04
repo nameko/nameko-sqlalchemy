@@ -19,8 +19,8 @@ DeclBase = declarative_base(name='examplebase')
 
 class ExampleModel(DeclBase):
     __tablename__ = 'example'
-    key = Column(String, primary_key=True)
-    value = Column(String)
+    key = Column(String(length=16), primary_key=True)
+    value = Column(String(length=16))
 
 
 @pytest.fixture
