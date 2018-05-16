@@ -224,6 +224,8 @@ Pytest fixtures to allow for easy testing are available.
 * ``db_session`` fixture (which depends on ``db_connection`` fixture) will instantiate test database and tear it down at the end of each test.
 * ``model_base`` fixture can be overridden to provide custom ``declarative_base``.
 * ``db_engine_options`` fixture can be overriden to provide additional keyword arguments to ``sqlalchemy.create_engine``.
+* ``database`` fixture which is similar to ``db_session`` but can be passed as ``Database`` dependency replacement
+  when using ``worker_factory`` or ``replace_dependencies``.
 
 
 .. code-block:: python

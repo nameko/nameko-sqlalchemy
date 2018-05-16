@@ -3,6 +3,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from .database import DatabaseWrapper, Session
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -128,7 +130,7 @@ def db_connection(db_url, model_base, db_engine_options):
 
 @pytest.yield_fixture
 def db_session(db_connection, model_base):
-    session = sessionmaker(bind=db_connection)
+    session = sessionmaker(bind=db_connection, class_=Session)
     db_session = session()
 
     yield db_session
@@ -140,3 +142,19 @@ def db_session(db_connection, model_base):
 
     db_session.commit()
     db_session.close()
+
+
+@pytest.yield_fixture
+def database(db_connection, model_base):
+
+    database = DatabaseWrapper(
+        sessionmaker(bind=db_connection, class_=Session))
+
+    yield database
+
+    database.close()
+
+    transaction = db_connection.begin()
+    for table in reversed(model_base.metadata.sorted_tables):
+        db_connection.execute(table.delete())
+    transaction.commit()

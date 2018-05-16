@@ -1,7 +1,11 @@
 import pytest
 
+from nameko.testing.services import dummy, worker_factory
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+
+from nameko_sqlalchemy import Database
+
 
 pytest_plugins = "pytester"
 
@@ -114,3 +118,110 @@ class TestDbEngineOptions(object):
         )
         result = testdir.runpytest()
         assert result.ret == 0
+
+
+class TestGetSession:
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclarativeBase)
+
+        @dummy
+        def write(self, id_, name):
+            obj = User(id=id_, name=name)
+            session = self.db.get_session()
+            session.add(obj)
+            session.commit()
+            session.close()
+
+        @dummy
+        def read(self, id_):
+            session = self.db.get_session()
+            name = session.query(User).get(id_).name
+            session.close()
+            return name
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write(11, 'ham')
+        assert service.read(11) == 'ham'
+
+
+class TestGetSessionContextManager:
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclarativeBase)
+
+        @dummy
+        def write(self, id_, name):
+            with self.db.get_session() as session:
+                obj = User(id=id_, name=name)
+                session.add(obj)
+
+        @dummy
+        def read(self, id_):
+            with self.db.get_session() as session:
+                return session.query(User).get(id_).name
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write(11, 'ham')
+        assert service.read(11) == 'ham'
+
+
+class TestWorkerScopeSession:
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclarativeBase)
+
+        @dummy
+        def write(self, id_, name):
+            obj = User(id=id_, name=name)
+            self.db.session.add(obj)
+            self.db.session.commit()
+
+        @dummy
+        def read(self, id_):
+            return self.db.session.query(User).get(id_).name
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write(11, 'ham')
+        assert service.read(11) == 'ham'
+
+
+class TestWorkerScopeSessionInContext:
+
+    class ExampleService(object):
+        name = 'exampleservice'
+
+        db = Database(DeclarativeBase)
+
+        @dummy
+        def write(self, id_, name):
+            with self.db.session as session:
+                obj = User(id=id_, name=name)
+                session.add(obj)
+
+        @dummy
+        def read(self, id_):
+            with self.db.session as session:
+                return session.query(User).get(id_).name
+
+    def test_database_fixture(self, database):
+
+        service = worker_factory(self.ExampleService, db=database)
+
+        service.write(11, 'ham')
+        assert service.read(11) == 'ham'
