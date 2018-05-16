@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+
+Version 1.4.0
+-------------
+
+Released 2018-05-16
+
+* New `database` pytest fixture to make it easier to test the Database
+  DependencyProvider with Nameko's `worker_factory` and `replace_dependencies`
+  helpers.
+
+
 Version 1.3.0
 -------------
 
