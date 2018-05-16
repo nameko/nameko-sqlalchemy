@@ -147,18 +147,14 @@ def db_session(db_connection, model_base):
 @pytest.yield_fixture
 def database(db_connection, model_base):
 
-    def reset(database):
-        with database.get_session() as session:
-            for table in reversed(model_base.metadata.sorted_tables):
-                session.execute(table.delete())
-
     database = DatabaseWrapper(
         sessionmaker(bind=db_connection, class_=Session))
 
-    reset(database)
-
     yield database
 
-    reset(database)
-
     database.close()
+
+    transaction = db_connection.begin()
+    for table in reversed(model_base.metadata.sorted_tables):
+        db_connection.execute(table.delete())
+    transaction.commit()
