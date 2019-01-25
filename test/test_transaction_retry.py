@@ -1,6 +1,7 @@
 import operator
 
 import pytest
+from mock import Mock
 from nameko.exceptions import ExtensionNotFound
 from nameko.testing.services import entrypoint_hook
 from nameko.testing.services import dummy
@@ -299,3 +300,100 @@ class TestTransactionRetryWithDependencyProviders:
             pass  # not implemented in ExampleServiceWithDatabaseSession
         else:
             assert db_session.query(ExampleModel).count() == 2
+
+
+def _op_exc(connection_invalidated=False):
+    return OperationalError(
+        None, None, None, connection_invalidated=connection_invalidated)
+
+
+@pytest.mark.parametrize(
+    'retries,backoff_factor,'
+    'call_results,'
+    'expected_result,expected_sleeps',
+    [
+        # success on first try
+        (0, 0.5, [1], 1, []),
+        # success on first try
+        (1, 0.5, [1], 1, []),
+        # single retry + success
+        (1, 0.5, [_op_exc(), 2], 2, [0]),
+        # single retry + success
+        (2, 0.5, [_op_exc(), 2], 2, [0]),
+        # Unspecified exception
+        (1, 0.5, [ValueError()], ValueError, []),
+        # Specified exception, then unspecified exception
+        (10, 0.5, [_op_exc(), ValueError(), 3], ValueError, [0]),
+        # Specified exception + multiple, then unspecified exception
+        (
+            10,
+            0.5,
+            [_op_exc() for _ in range(4)] + [5],
+            5,
+            [0.0, 0.5, 1.0, 2.0]
+        ),
+        (
+            10,
+            0,
+            [_op_exc() for _ in range(4)] + [5],
+            5,
+            [0, 0, 0, 0]
+        ),
+        # Max retries exceeded
+        (
+            3, 0.5,
+            [_op_exc() for _ in range(4)],
+            OperationalError, [0, 0.5, 1.0]
+        ),
+    ])
+def test_retry_configuration(retries, backoff_factor, call_results,
+                             expected_result, expected_sleeps,
+                             monkeypatch):
+    sleeps = []
+
+    mocked_sleep = Mock(side_effect=lambda delay: sleeps.append(delay))
+    monkeypatch.setattr('eventlet.sleep', mocked_sleep)
+
+    mocked_fcn = Mock()
+    mocked_fcn.side_effect = call_results
+
+    decorator = transaction_retry(retries=retries,
+                                  backoff_factor=backoff_factor)
+    decorated = decorator(mocked_fcn)
+
+    if (
+            isinstance(expected_result, type) and
+            issubclass(expected_result, Exception)
+    ):
+        with pytest.raises(expected_result):
+            decorated()
+
+    else:
+        result = decorated()
+        assert expected_result == result
+
+    assert expected_sleeps == sleeps
+
+
+def test_multiple_retries_with_disabled_connection(
+    toxiproxy_db_session, toxiproxy, disconnect
+):
+    if not toxiproxy:
+        pytest.skip('Toxiproxy not installed')
+
+    state = {'calls': 0}
+
+    @transaction_retry(session=toxiproxy_db_session, retries=3)
+    def get_model_count():
+        state['calls'] += 1
+        if state['calls'] >= 3:
+            toxiproxy.enable()
+        return toxiproxy_db_session.query(ExampleModel).count()
+
+    toxiproxy_db_session.add(ExampleModel(data='hello1'))
+    toxiproxy_db_session.add(ExampleModel(data='hello2'))
+    toxiproxy_db_session.commit()
+
+    toxiproxy.disable()
+    assert get_model_count() == 2
+    assert state['calls'] == 3

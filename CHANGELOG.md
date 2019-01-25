@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+Unreleased
+----------
+
+* Added arguments `retries` and `backoff_factor` to `retry_transaction` decorator.
 
 Version 1.4.0
 -------------
@@ -29,7 +33,7 @@ Released 2018-03-15
   (fixes #25)
 * Change default behaviour of context manager so sessions are closed
   on worker teardown rather than context manager exit (closes #24)
-  
+
 Version 1.1.0
 -------------
 
@@ -68,7 +72,7 @@ Version 0.0.3
 Released 2016-08-26
 
 * Added `pytest` fixtures for managing session in tests.
- 
+
 Version 0.0.2
 -------------
 

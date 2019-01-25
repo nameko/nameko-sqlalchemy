@@ -170,6 +170,18 @@ or using with the ``Database`` dependency provider
             self.db.session.add(ExampleModel(data='hello'))
             self.db.session.commit()
 
+Optionally,the transaction may be retried multiple times with an exponential backoff delay.
+In the following code, the session will be retried after 0, 1, 2 and 4 seconds, finally raising the error if the connection still has not recovered.
+
+.. code-block:: python
+
+    @transaction_retry(retries=4, backoff_factor=1)
+    def get_example_data():
+        db_session.query(ExampleModel).all()
+
+    example_data = get_example_data()
+
+
 .. caution::
 
     Using the decorator may cause unanticipated consequences when the decorated function uses more than one transaction.
@@ -320,4 +332,3 @@ If ``toxiproxy-api-url`` and ``toxiproxy-db-url`` parameters are provided the te
         --toxiproxy-db-url="http://toxiproxy_server:3306"
 
 if no ``toxiproxy-api-url`` and ``toxiproxy-db-url`` parameter was provided the tests that require toxiproxy will be skipped.
-
