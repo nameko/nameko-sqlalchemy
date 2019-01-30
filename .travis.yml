@@ -31,7 +31,7 @@ matrix:
           secure: L838z+MtH79Px67frLMPo1LP/FULLDDlx6SOgZ/Npg+NBAs8D+Yu2OGCSLxgaHUU7FqK0Gqp4NNQxM8yLD1mGPbtgyd/DYlL8ugDHu45QEx+7YI2tAwc6XOKba1PXqYZi33/aCDUe5LYcVKfoNqXaXZxt25eWwI1VjnH5KJdEpI=
         on:
           tags: true
-          repo: onefinestay/nameko-sqlalchemy
+          repo: nameko/nameko-sqlalchemy
 
 script:
   - tox -e $TOX_ENV
