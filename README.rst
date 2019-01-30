@@ -171,11 +171,14 @@ or using with the ``Database`` dependency provider
             self.db.session.commit()
 
 Optionally,the transaction may be retried multiple times with an exponential backoff delay.
-In the following code, the session will be retried after 0, 1, 2 and 4 seconds, finally raising the error if the connection still has not recovered.
+
+In the following code, the session will be retried after 1, 3, 9, 10, and 10 seconds:
+The initial delay is given by the `delay` argument. On subsequent retries, the delay is multiplied by the factor provided by `backoff` but will never exceed the delay given in `max_delay`.
+Finally, if the connection has still not recovered after `max_attempts` tries, the error is reraised.
 
 .. code-block:: python
 
-    @transaction_retry(retries=4, backoff_factor=1)
+    @transaction_retry(max_attempts=5, delay=1, backoff=3, max_delay=10)
     def get_example_data():
         db_session.query(ExampleModel).all()
 

@@ -308,57 +308,30 @@ def _op_exc(connection_invalidated=False):
 
 
 @pytest.mark.parametrize(
-    'retries,backoff_factor,'
+    'max_attempts,'
     'call_results,'
-    'expected_result,expected_sleeps',
+    'expected_result',
     [
         # success on first try
-        (0, 0.5, [1], 1, []),
+        (0, [1], 1),
         # success on first try
-        (1, 0.5, [1], 1, []),
+        (1, [1], 1),
         # single retry + success
-        (1, 0.5, [_op_exc(), 2], 2, [0]),
-        # single retry + success
-        (2, 0.5, [_op_exc(), 2], 2, [0]),
+        (1, [_op_exc(), 2], 2),
         # Unspecified exception
-        (1, 0.5, [ValueError()], ValueError, []),
+        (1, [ValueError()], ValueError),
         # Specified exception, then unspecified exception
-        (10, 0.5, [_op_exc(), ValueError(), 3], ValueError, [0]),
-        # Specified exception + multiple, then unspecified exception
-        (
-            10,
-            0.5,
-            [_op_exc() for _ in range(4)] + [5],
-            5,
-            [0.0, 0.5, 1.0, 2.0]
-        ),
-        (
-            10,
-            0,
-            [_op_exc() for _ in range(4)] + [5],
-            5,
-            [0, 0, 0, 0]
-        ),
+        (10, [_op_exc(), ValueError(), 3], ValueError),
+        # Multiple specified exceptions, then success
+        (10, [_op_exc() for _ in range(4)] + [5], 5),
         # Max retries exceeded
-        (
-            3, 0.5,
-            [_op_exc() for _ in range(4)],
-            OperationalError, [0, 0.5, 1.0]
-        ),
+        (3, [_op_exc() for _ in range(4)], OperationalError)
     ])
-def test_retry_configuration(retries, backoff_factor, call_results,
-                             expected_result, expected_sleeps,
-                             monkeypatch):
-    sleeps = []
-
-    mocked_sleep = Mock(side_effect=lambda delay: sleeps.append(delay))
-    monkeypatch.setattr('eventlet.sleep', mocked_sleep)
-
+def test_retry_configuration(max_attempts, call_results, expected_result):
     mocked_fcn = Mock()
     mocked_fcn.side_effect = call_results
 
-    decorator = transaction_retry(retries=retries,
-                                  backoff_factor=backoff_factor)
+    decorator = transaction_retry(max_attempts=max_attempts)
     decorated = decorator(mocked_fcn)
 
     if (
@@ -372,8 +345,6 @@ def test_retry_configuration(retries, backoff_factor, call_results,
         result = decorated()
         assert expected_result == result
 
-    assert expected_sleeps == sleeps
-
 
 def test_multiple_retries_with_disabled_connection(
     toxiproxy_db_session, toxiproxy, disconnect
@@ -383,7 +354,7 @@ def test_multiple_retries_with_disabled_connection(
 
     state = {'calls': 0}
 
-    @transaction_retry(session=toxiproxy_db_session, retries=3)
+    @transaction_retry(session=toxiproxy_db_session, max_attempts=3)
     def get_model_count():
         state['calls'] += 1
         if state['calls'] >= 3:

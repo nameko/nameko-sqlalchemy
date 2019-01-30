@@ -4,7 +4,7 @@ Release Notes
 Unreleased
 ----------
 
-* Added arguments `retries` and `backoff_factor` to `retry_transaction` decorator.
+* Add retry arguments to `retry_transaction` decorator.
 
 Version 1.4.0
 -------------
