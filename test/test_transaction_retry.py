@@ -1,4 +1,5 @@
 import operator
+import sys
 
 import pytest
 from mock import Mock
@@ -308,30 +309,74 @@ def _op_exc(connection_invalidated=False):
 
 
 @pytest.mark.parametrize(
-    'max_attempts,'
+    'retry_kwargs,'
     'call_results,'
-    'expected_result',
+    'expected_result,expected_sleeps',
     [
         # success on first try
-        (0, [1], 1),
+        ({'total': 0, 'backoff_factor': 0.5}, [1], 1, []),
         # success on first try
-        (1, [1], 1),
+        ({'total': 1, 'backoff_factor': 0.5}, [1], 1, []),
         # single retry + success
-        (1, [_op_exc(), 2], 2),
+        ({'total': 1, 'backoff_factor': 0.5}, [_op_exc(), 2], 2, [0]),
+        # single retry + success, same even if more retries would have been
+        # possible
+        ({'total': 2, 'backoff_factor': 0.5}, [_op_exc(), 2], 2, [0]),
         # Unspecified exception
-        (1, [ValueError()], ValueError),
+        (
+            {'total': 1, 'backoff_factor': 0.5},
+            [ValueError()],
+            ValueError,
+            []
+        ),
         # Specified exception, then unspecified exception
-        (10, [_op_exc(), ValueError(), 3], ValueError),
-        # Multiple specified exceptions, then success
-        (10, [_op_exc() for _ in range(4)] + [5], 5),
+        (
+            {'total': 10, 'backoff_factor': 0.5},
+            [_op_exc(), ValueError(), 3],
+            ValueError,
+            [0]
+        ),
+        # Multiple specified exception, then success
+        (
+            {'total': 10, 'backoff_factor': 0.5},
+            [_op_exc() for _ in range(4)] + [5],
+            5,
+            [0.0, 1.0, 2.0, 4.0]
+        ),
+        # Multiple specified exception with max backoff, then success
+        (
+            {'total': 10, 'backoff_factor': 0.5, 'backoff_max': 1.2},
+            [_op_exc() for _ in range(4)] + [5],
+            5,
+            [0.0, 1.0, 1.2, 1.2]
+        ),
+        # Multiple specified exception without delay, then success
+        (
+            {'total': 10, 'backoff_factor': 0},
+            [_op_exc() for _ in range(4)] + [5],
+            5,
+            [0, 0, 0, 0]
+        ),
         # Max retries exceeded
-        (3, [_op_exc() for _ in range(4)], OperationalError)
+        (
+            {'total': 3, 'backoff_factor': 0.5},
+            [_op_exc() for _ in range(4)],
+            OperationalError, [0, 1.0, 2.0]
+        ),
     ])
-def test_retry_configuration(max_attempts, call_results, expected_result):
+def test_retry_configuration(retry_kwargs, call_results,
+                             expected_result, expected_sleeps,
+                             monkeypatch):
+    sleeps = []
+
+    mocked_sleep = Mock(side_effect=lambda delay: sleeps.append(delay))
+    monkeypatch.setattr(sys.modules['nameko_sqlalchemy.transaction_retry'],
+                        'sleep', mocked_sleep)
+
     mocked_fcn = Mock()
     mocked_fcn.side_effect = call_results
 
-    decorator = transaction_retry(max_attempts=max_attempts)
+    decorator = transaction_retry(**retry_kwargs)
     decorated = decorator(mocked_fcn)
 
     if (
@@ -345,6 +390,8 @@ def test_retry_configuration(max_attempts, call_results, expected_result):
         result = decorated()
         assert expected_result == result
 
+    assert expected_sleeps == sleeps
+
 
 def test_multiple_retries_with_disabled_connection(
     toxiproxy_db_session, toxiproxy, disconnect
@@ -354,7 +401,7 @@ def test_multiple_retries_with_disabled_connection(
 
     state = {'calls': 0}
 
-    @transaction_retry(session=toxiproxy_db_session, max_attempts=3)
+    @transaction_retry(session=toxiproxy_db_session, total=3)
     def get_model_count():
         state['calls'] += 1
         if state['calls'] >= 3:

@@ -170,15 +170,22 @@ or using with the ``Database`` dependency provider
             self.db.session.add(ExampleModel(data='hello'))
             self.db.session.commit()
 
-Optionally,the transaction may be retried multiple times with an exponential backoff delay.
+Optionally, the transaction may be retried multiple times with an exponential backoff delay.
+If given, the backoff factor is applied between attempts after the second try
+(most errors are resolved immediately by a second try without a delay).
+The applied delay will then be::
 
-In the following code, the session will be retried after 1, 3, 9, 10, and 10 seconds:
-The initial delay is given by the `delay` argument. On subsequent retries, the delay is multiplied by the factor provided by `backoff` but will never exceed the delay given in `max_delay`.
-Finally, if the connection has still not recovered after `max_attempts` tries, the error is reraised.
+    {backoff_factor} * (2 ** ({number of total retries} - 1))
+
+seconds.
+The delay will never be longer than `backoff_max` seconds.
+By default, backoff is disabled (`backoff_factor` set to 0).
+Finally, if the connection has still not recovered after `total` tries, the error is reraised.
+The following code will thus wait for 0.0s, 0.2s, 0.4s, 0.8s, 1.0s before raising an error:
 
 .. code-block:: python
 
-    @transaction_retry(max_attempts=5, delay=1, backoff=3, max_delay=10)
+    @transaction_retry(total=5, backoff_factor=0.1, backoff_max=1.0)
     def get_example_data():
         db_session.query(ExampleModel).all()
 
