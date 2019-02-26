@@ -1,10 +1,14 @@
 Release Notes
 =============
 
-Unreleased
-----------
+Version 1.5.0
+-------------
 
-* Add retry arguments to `retry_transaction` decorator.
+Released 2019-02-26
+
+* The`retry_transaction` decorator now accepts arguments, allowing multiple
+retries after a delay.
+
 
 Version 1.4.0
 -------------
