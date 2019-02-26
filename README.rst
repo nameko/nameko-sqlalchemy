@@ -236,7 +236,7 @@ In order to avoid that one may want to do something like this:
 
                 add_two_things()
 
-In this case the failed transaction will be rolled back (becase the session is passed to the decorator) and records will not be duplicated.
+In this case the failed transaction will be rolled back (because the session is passed to the decorator) and records will not be duplicated.
 
 Pytest fixtures
 ---------------
