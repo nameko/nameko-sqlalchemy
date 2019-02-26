@@ -17,7 +17,7 @@ setup(
         'dev': [
             "coverage==4.0.3",
             "flake8==2.5.4",
-            "pylint==1.7.5",
+            "pylint==1.9.4",
             "pytest==2.9.1",
             "requests==2.18.4",
             "PyMySQL",
