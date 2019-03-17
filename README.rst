@@ -295,8 +295,8 @@ By default SQLite memory database will be used.
 
 .. code-block:: shell
 
-    py.test test --test-db-url=sqlite:///test_db.sql
-    py.test test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
+    pytest test --test-db-url=sqlite:///test_db.sql
+    pytest test --test-db-url=mysql+mysqlconnector://root:password@localhost:3306/nameko_sqlalchemy_test
 
 
 Running the tests
@@ -323,10 +323,10 @@ Once the containers have been set up the tests can be run by running the followi
     make test
 
 
-Running tests by using py.test command
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Running tests by using pytest command
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Three extra parameters may be passed to `py.test`:
+Three extra parameters may be passed to `pytest`:
 
 * ``test-db-url``: The database URL
 * ``toxiproxy-api-url``: The url of the Toxiproxy HTTP API
@@ -336,7 +336,7 @@ If ``toxiproxy-api-url`` and ``toxiproxy-db-url`` parameters are provided the te
 
 .. code-block:: shell
 
-    py.test test \
+    pytest test \
         --test-db-url="mysql+pymysql://test_user:password@database_host:3306/nameko_sqlalchemy_test" \
         --toxiproxy-api-url="http://toxiproxy_server:8474"
         --toxiproxy-db-url="http://toxiproxy_server:3306"
