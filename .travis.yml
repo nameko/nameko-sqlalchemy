@@ -1,5 +1,8 @@
 sudo: false
 language: python
+python: 3.7
+
+dist: xenial
 
 services:
   - docker
@@ -21,6 +24,9 @@ matrix:
     - stage: test
       python: 3.6
       env: TOX_ENV=py36
+    - stage: test
+      python: 3.7
+      env: TOX_ENV=py37
     - stage: deploy
       script: skip
       deploy:
