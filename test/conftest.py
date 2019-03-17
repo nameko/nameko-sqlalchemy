@@ -40,7 +40,7 @@ def container_factory():
     for c in all_containers:
         try:
             c.stop()
-        except:
+        except:  # noqa: E722
             pass
 
 

@@ -15,11 +15,11 @@ setup(
     ],
     extras_require={
         'dev': [
-            "coverage==4.0.3",
-            "flake8==2.5.4",
-            "pylint==1.9.4",
-            "pytest==2.9.1",
-            "requests==2.18.4",
+            "coverage==4.5.3",
+            "flake8==3.7.7",
+            "pylint>=1.9.4",  # pinned for py27 support
+            "pytest==4.3.1",
+            "requests==2.21.0",
             "PyMySQL",
         ]
     },
