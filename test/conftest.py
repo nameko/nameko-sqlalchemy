@@ -8,7 +8,6 @@ eventlet.monkey_patch()  # noqa (code before rest of imports)
 
 import pytest
 import requests
-from nameko.containers import ServiceContainer
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -23,25 +22,6 @@ class ExampleModel(DeclarativeBase):
     __tablename__ = 'example'
     id = Column(Integer, primary_key=True)
     data = Column(String(100))
-
-
-@pytest.yield_fixture
-def container_factory():
-
-    all_containers = []
-
-    def make_container(service_cls, config):
-        container = ServiceContainer(service_cls, config)
-        all_containers.append(container)
-        return container
-
-    yield make_container
-
-    for c in all_containers:
-        try:
-            c.stop()
-        except:  # noqa: E722
-            pass
 
 
 @pytest.yield_fixture
