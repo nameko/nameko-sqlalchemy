@@ -67,7 +67,7 @@ class TestDbEngineOptions(object):
             import pytest
             from mock import Mock, patch
 
-            @pytest.yield_fixture
+            @pytest.fixture(scope='session')
             def create_engine_mock():
                 with patch(
                     'nameko_sqlalchemy.pytest_fixtures.create_engine'
@@ -94,7 +94,7 @@ class TestDbEngineOptions(object):
             import pytest
             from mock import Mock, patch
 
-            @pytest.yield_fixture
+            @pytest.fixture(scope='session')
             def create_engine_mock():
                 with patch(
                     'nameko_sqlalchemy.pytest_fixtures.create_engine'

@@ -47,5 +47,6 @@ class DatabaseSession(DependencyProvider):
         session = self.sessions.pop(worker_ctx)
         session.close()
 
+
 # backwards compat
 Session = DatabaseSession
