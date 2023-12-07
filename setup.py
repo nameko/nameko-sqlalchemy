@@ -11,16 +11,16 @@ setup(
     packages=['nameko_sqlalchemy'],
     install_requires=[
         "nameko>=2.0.0",
-        "sqlalchemy"
+        "sqlalchemy>=1.4,<2"
     ],
     extras_require={
         'dev': [
-            "coverage==4.5.3",
-            "flake8==3.7.7",
-            "pylint>=1.9.4",  # pinned for py27 support
-            "pytest==4.3.1",
-            "requests==2.21.0",
-            "PyMySQL",
+            "coverage==7.3.2",
+            "flake8==6.1.0",
+            "pylint==2.3.1",
+            "pytest>=7.4.3,<8",
+            "requests==2.31.0",
+            "PyMySQL==1.1.0",
         ]
     },
     entry_points={
@@ -36,13 +36,10 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Internet",
         "Topic :: Software Development :: Libraries :: Python Modules",
 

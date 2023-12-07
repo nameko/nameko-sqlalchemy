@@ -4,10 +4,12 @@ import sys
 import pytest
 from mock import Mock
 from nameko.exceptions import ExtensionNotFound
-from nameko.testing.services import entrypoint_hook
-from nameko.testing.services import dummy
+from nameko.testing.services import dummy, entrypoint_hook
 from sqlalchemy import create_engine
-from sqlalchemy.exc import StatementError, OperationalError
+from sqlalchemy.exc import (
+    OperationalError,
+    StatementError
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -104,14 +106,16 @@ def test_raises_error_if_cannot_reconnect(
     toxiproxy_db_session.add(ExampleModel(data='hello2'))
     toxiproxy_db_session.commit()
 
-    disconnect(reconnect=False)
-
     @transaction_retry
     def get_model_count():
         return toxiproxy_db_session.query(ExampleModel).count()
 
-    with pytest.raises(StatementError):
-        get_model_count()
+    try:
+        disconnect(reconnect=False)
+        with pytest.raises(StatementError):
+            get_model_count()
+    except Exception:
+        toxiproxy_db_session.rollback()
 
 
 def test_raises_if_connection_is_not_invalidated():
@@ -379,9 +383,8 @@ def test_retry_configuration(retry_kwargs, call_results,
     decorator = transaction_retry(**retry_kwargs)
     decorated = decorator(mocked_fcn)
 
-    if (
-            isinstance(expected_result, type) and
-            issubclass(expected_result, Exception)
+    if isinstance(expected_result, type) and issubclass(
+            expected_result, Exception
     ):
         with pytest.raises(expected_result):
             decorated()

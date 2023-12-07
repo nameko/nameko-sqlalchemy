@@ -1,0 +1,7 @@
+-r requirements.txt
+coverage==7.3.2
+flake8==6.1.0
+pylint==3.0.2
+pytest>=7.4.3,<8
+requests==2.31.0
+PyMySQL==1.1.0

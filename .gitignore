@@ -1,5 +1,7 @@
 .coverage
 *.pyc
+.venv
+.idea
 
 ## Packages
 *.egg-info

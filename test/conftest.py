@@ -32,9 +32,7 @@ def toxiproxy(toxiproxy_api_url, toxiproxy_db_url):
             self.api_url = api_url
 
         def enable(self):
-            resource = 'http://{}/reset'.format(
-                self.api_url, TOXIPROXY_PROXY_NAME
-            )
+            resource = 'http://{}/reset'.format(self.api_url)
             requests.post(resource)
 
         def disable(self):

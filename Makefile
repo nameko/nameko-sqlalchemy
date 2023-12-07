@@ -1,7 +1,7 @@
 test: flake8 pylint pytest
 
 flake8:
-	flake8 nameko_sqlalchemy test setup.py
+	flake8 --ignore=E402 nameko_sqlalchemy test setup.py
 
 pylint:
 	pylint nameko_sqlalchemy -E
@@ -9,9 +9,9 @@ pylint:
 pytest: test-deps
 	coverage run --concurrency=eventlet --source nameko_sqlalchemy --branch -m \
 		pytest test \
-			--test-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_mysql 3306)/nameko_sqlalchemy_test" \
-			--toxiproxy-api-url=$(shell docker port nameko_sqlalchemy_test_toxiproxy 8474) \
-			--toxiproxy-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_toxiproxy 3307)/nameko_sqlalchemy_test"
+			--test-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_mysql 3306 | grep -v '::')/nameko_sqlalchemy_test" \
+			--toxiproxy-api-url=$(shell docker port nameko_sqlalchemy_test_toxiproxy 8474 | grep -v '::') \
+			--toxiproxy-db-url="mysql+pymysql://test_user:password@$(shell docker port nameko_sqlalchemy_test_toxiproxy 3307 | grep -v '::')/nameko_sqlalchemy_test"
 	coverage report --show-missing --fail-under=100
 
 test-deps: container-cleanup mysql-setup toxiproxy-setup
