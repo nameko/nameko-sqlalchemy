@@ -5,7 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as BaseSession
 from sqlalchemy.orm import sessionmaker
 
-
 DB_URIS_KEY = 'DB_URIS'
 DB_ENGINE_OPTIONS_KEY = 'DB_ENGINE_OPTIONS'
 DB_SESSION_OPTIONS_KEY = 'DB_SESSION_OPTIONS'

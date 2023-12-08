@@ -16,10 +16,10 @@ setup(
     extras_require={
         'dev': [
             "coverage==7.3.2",
-            "flake8==6.1.0",
-            "pylint==2.3.1",
+            "isort==5.12.0",
             "pytest>=7.4.3,<8",
             "requests==2.31.0",
+            "ruff==0.1.6",
             "PyMySQL==1.1.0",
         ]
     },

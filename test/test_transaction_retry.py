@@ -1,23 +1,19 @@
 import operator
 import sys
+from test.conftest import DeclarativeBase, ExampleModel
 
 import pytest
 from mock import Mock
 from nameko.exceptions import ExtensionNotFound
 from nameko.testing.services import dummy, entrypoint_hook
 from sqlalchemy import create_engine
-from sqlalchemy.exc import (
-    OperationalError,
-    StatementError
-)
+from sqlalchemy.exc import OperationalError, StatementError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from nameko_sqlalchemy import (
-    Database, DatabaseSession, DB_URIS_KEY, transaction_retry
-)
-from test.conftest import DeclarativeBase, ExampleModel
-
+from nameko_sqlalchemy.database import DB_URIS_KEY, Database
+from nameko_sqlalchemy.database_session import DatabaseSession
+from nameko_sqlalchemy.transaction_retry import transaction_retry
 
 DeclBase = declarative_base(name='examplebase')
 
