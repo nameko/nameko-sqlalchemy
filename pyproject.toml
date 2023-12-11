@@ -1,3 +1,56 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nameko-sqlalchemy"
+version = "2.0.0"
+description = "SQLAlchemy dependency for nameko services"
+license = {file = "LICENSE.txt"}
+readme = "README.rst"
+requires-python = ">=3.8"
+authors = [{name="onefinestay", email="engineering@onefinestay.com"}]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "nameko>=2.0.0",
+    "sqlalchemy>=1.4,<2"
+]
+
+[project.urls]
+Homepage = "https://github.com/onefinestay/nameko-sqlalchemy"
+
+[project.optional-dependencies]
+dev = [
+    "coverage==7.3.2",
+    "isort==5.12.0",
+    "mypy==1.7.1",
+    "pytest==7.4.3",
+    "requests==2.31.0",
+    "ruff==0.1.6",
+    "PyMySQL==1.1.0",
+    "types-mock==5.1.0.3",
+    "types-requests==2.31.0.10",
+]
+
+[project.entry-points."pytest11"]
+nameko_sqlalchemy = "nameko_sqlalchemy.pytest_fixtures"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = true
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3

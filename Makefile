@@ -16,7 +16,7 @@ mysql-container:
 
 toxiproxy-setup: toxiproxy-container
 	@echo Setting up toxiproxy to mysql
-	docker exec -it nameko_sqlalchemy_test_toxiproxy /go/bin/toxiproxy-cli \
+	docker exec nameko_sqlalchemy_test_toxiproxy /go/bin/toxiproxy-cli \
 		create nameko_sqlalchemy_test_mysql \
 		--listen=0.0.0.0:3307 \
 		--upstream=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nameko_sqlalchemy_test_mysql`:3306

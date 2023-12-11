@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+Version 2.0.0
+-------------
+
+Released 2023-12-11
+
+* Updated project to modern standards and reformatted code
+* Dropped support for Python 2.7, 3.4, 3.5, 3.6, 3.7
+* Added support for Python 3.8, 3.9, 3.10
+* Switched from flake8 + pylint to isort + ruff + mypy
+* Updated tox to 4+
+* Moved package config from setup.py to pyproject.toml
+* Moved CI from travis to github actions
+
+
 Version 1.5.0
 -------------
 
