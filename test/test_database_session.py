@@ -9,11 +9,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import Session
 
-from nameko_sqlalchemy import (
-    DatabaseSession,
-    DB_URIS_KEY,
-)
-
+from nameko_sqlalchemy.database import DB_URIS_KEY
+from nameko_sqlalchemy.database_session import DatabaseSession
 
 DeclBase = declarative_base(name='examplebase')
 
