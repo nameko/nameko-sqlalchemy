@@ -4,7 +4,7 @@ from nameko.extensions import DependencyProvider
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from nameko_sqlalchemy import DB_URIS_KEY
+from nameko_sqlalchemy.database import DB_URIS_KEY
 
 
 class DatabaseSession(DependencyProvider):

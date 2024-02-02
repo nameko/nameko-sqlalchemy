@@ -4,15 +4,11 @@ import pytest
 from mock import Mock, patch
 from nameko.containers import ServiceContainer, WorkerContext
 from nameko.testing.services import dummy, entrypoint_hook
-from nameko_sqlalchemy.database import (
-    DB_URIS_KEY,
-    Database,
-    Session,
-)
 from sqlalchemy import Column, String, create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 
+from nameko_sqlalchemy.database import DB_URIS_KEY, Database, Session
 
 DeclBase = declarative_base(name='examplebase')
 

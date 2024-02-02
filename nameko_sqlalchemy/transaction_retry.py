@@ -1,6 +1,6 @@
-from time import sleep
 import functools
 import operator
+from time import sleep
 
 import wrapt
 from sqlalchemy import exc

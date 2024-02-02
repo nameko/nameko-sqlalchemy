@@ -1,11 +1,9 @@
 import pytest
-
 from nameko.testing.services import dummy, worker_factory
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from nameko_sqlalchemy import Database
-
+from nameko_sqlalchemy.database import Database
 
 pytest_plugins = "pytester"
 

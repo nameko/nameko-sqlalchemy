@@ -2,15 +2,16 @@
 # You should monkey patch the standard library as early as possible to avoid
 # importing anything before the patch is applied.
 # See http://eventlet.net/doc/patching.html#monkeypatching-the-standard-library
-import eventlet
 import json
+
+import eventlet
+
 eventlet.monkey_patch()  # noqa (code before rest of imports)
 
 import pytest
 import requests
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-
 
 TOXIPROXY_PROXY_NAME = 'nameko_sqlalchemy_test_mysql'
 
@@ -32,9 +33,7 @@ def toxiproxy(toxiproxy_api_url, toxiproxy_db_url):
             self.api_url = api_url
 
         def enable(self):
-            resource = 'http://{}/reset'.format(
-                self.api_url, TOXIPROXY_PROXY_NAME
-            )
+            resource = 'http://{}/reset'.format(self.api_url)
             requests.post(resource)
 
         def disable(self):
